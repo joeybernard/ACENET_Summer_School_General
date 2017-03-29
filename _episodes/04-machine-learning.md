@@ -116,23 +116,83 @@ SparkSession available as 'spark'.
 this loads the matplotlib python module into the shell so that we can access it using the `plt` object. We will use this to show the plots we create. Next lets load the module which allows us to create a spark session and create a new spark sessions
 ~~~
 >>> import pyspark.sql.session as pys
->>> spark=pys.SparkSession.builder.appName("House Price Prediction").getOrCreate()
+>>> spark = pys.SparkSession.builder.appName("House Price Prediction").getOrCreate()
 ~~~
 {: .bash}
 Now we can use the `SparkSession` object we just create `spark` to load our data into a `DataFrame`. Spark DataFrames are very similar to Pandas DataFrames, in fact you can convert a spark dataframe into a Pandas dataframe, which is what we will do to plot our data.
 ~~~
->>> houseSDF=spark.read.csv("file:///home/cgeroux/ml_spark/houses_clean.csv",header=True,inferSchema=True)
->>> houseSDFSmall=houseSDF.sample(False,0.1,seed=10)
+>>> houseSDF = spark.read.csv("file:///home/cgeroux/ml_spark/houses_clean.csv", header=True, inferSchema=True)
+>>> houseSDFSmall = houseSDF.sample(False, 0.1, seed=10)
 ~~~
 {: .bash}
 Here we have read in the csv file 'houses_clean.csv' and stored the data in `houseSDF`. Then we create a sample from the total data. This smaller set will allow us to see how a subset of the data looks. If you data is very large this is important to do because in order to plot the data it will need to fit onto one machine. In this case however we are actually only using one machine and the data set isn't that large but in theory that data set could be very large and distributed across many machines. The first parameter of the `sample` function indicates if it should sample "with replacement" which means that once a particular houses data is chosen it can in theory be picked again. In our case we indicated we don't want replacement so each house chosen will correspond to a different house in the original dataset. Next we convert the spark dataframe to a pandas dataframe in order to plot it.
 ~~~
->>> housePDFSmall=houseSDFSmall.toPandas()
+>>> housePDFSmall = houseSDFSmall.toPandas()
 >>> housePDFSmall.plot(x="sqft_living",y="price",kind="scatter")
 >>> plt.show()
 ~~~
 {: .bash}
 ![sqft_living vs. price](../fig/machine_learning/sqft_living_vs_price.png)
 
+> ## How does the price depend on other features?
+> Try plotting some of the other feature columns against the price to see how they might impact house prices.
+{: .challenge}
 
+# Modelling the data
+Split the data into two groups, a training set used to build our model, and a testing set test our model with.
+~~~
+>>> testingSetSDF, trainingSetSDF=houseSDF.randomSplit([0.1,0.9], seed=10)
+~~~
+{: .bash}
 
+Create an object which can be used to change the DataFrame data into a vector which can be used in a linear regression model.
+~~~
+>>> from pyspark.ml.feature import VectorAssembler
+>>> vectorizer = VectorAssembler(inputCols = ["sqft_living"], outputCol = "features")
+~~~
+{: .bash}
+Next create the linear regression model
+~~~
+>>> from pyspark.ml.regression import LinearRegression
+>>> lr = LinearRegression(maxIter = 100, regParam = 1e-8, predictionCol = "Predicted_price", labelCol = "price")
+~~~
+{: .bash}
+Now create a pipeline that first vectorizes our dataframe and then fits our linear regression model to the data
+~~~
+>>> from pyspark.ml import Pipeline
+>>> lrPipeline = Pipeline(stages=[vectorizer,lr])
+>>> lrModel = lrPipeline.fit(trainingSetSDF)
+~~~
+{: .bash}
+Now we can view the linear regression model 
+~~~
+>>> y0=lrModel.stages[1].intercept
+>>> print(y0)
+~~~
+{: .bash}
+~~~
+-45940.53858016282
+~~~
+{: .output}
+~~~
+>>> m=lrModel.stages[1].coefficients[0]
+>>> print(m)
+~~~
+{: .bash}
+~~~
+282.08545292501293
+~~~
+{: .output}
+~~~
+>>> maxSqft=float(housePDFSmall[["sqft_living"]].max())
+>>> minSqft=float(housePDFSmall[["sqft_living"]].min())
+>>> import pandas as pd
+>>> lineDF=pd.DataFrame({'sqft_living':pd.Series([minSqft,maxSqft]),'price_fit':pd.Series([m*minSqft+y0,m*maxSqft+y0])})
+>>> axis=housePDFSmall.plot(x="sqft_living",y="price",kind="scatter")
+>>> lineDF.plot(x="sqft_living",y="price_fit",ax=axis,style='r-')
+>>> plt.show()
+~~~
+{: .bash}
+
+![sqft_living vs. price with linear fit](../fig/machine_learning/sqft_living_vs_price_fit.png)
+## Assessing the model
