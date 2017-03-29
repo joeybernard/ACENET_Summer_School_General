@@ -6,20 +6,12 @@
 carpentry: "swc"
 
 # Overall title for pages.
-<<<<<<< HEAD
-title: "Lesson Title"
-=======
 title: "ACENET Summer School - General"
->>>>>>> c19d0e7f11188902589393bf32ee12a0835beb9c
 
 # Contact.  This *must* include the protocol: if it's an email
 # address, it must look like "mailto:lessons@software-carpentry.org",
 # or if it's a URL, "https://gitter.im/username/ProjectName".
-<<<<<<< HEAD
-contact: "mailto:lessons@software-carpentry.org"
-=======
 contact: "mailto:joey.bernard@ace-net.ca"
->>>>>>> c19d0e7f11188902589393bf32ee12a0835beb9c
 
 #------------------------------------------------------------
 # Generic settings (should not need to change).
@@ -30,11 +22,7 @@ kind: "lesson"
 
 # Magic to make URLs resolve both locally and on GitHub.
 # See https://help.github.com/articles/repository-metadata-on-github-pages/.
-<<<<<<< HEAD
-repository: <USERNAME>/<PROJECT>
-=======
 repository: joeybernard/ACENET_Summer_School_General
->>>>>>> c19d0e7f11188902589393bf32ee12a0835beb9c
 
 # Sites.
 amy_site: "https://amy.software-carpentry.org/workshops"
