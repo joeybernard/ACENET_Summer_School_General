@@ -9,6 +9,16 @@ objectives:
 keypoints:
 - "First key point."
 ---
+> ## Prerequisites
+> There is very strong requirements on:
+>
+> * Python programing language (version 3)
+> * Unix Shell
+> 
+> The following are related and will make the learning curve shallower but aren't required:
+> * pandas
+> * matplotlib
+{: .prereq}
 
 ## Setup
 In this episode we will explore housing data from Seattle Washington. The data set was originally posted on [kaggle house sales](https://www.kaggle.com/harlfoxem/housesalesprediction) but I have done some cleaning of the data (e.g. removing quotes) and we will use the cleaned data set as the starting point. 
@@ -125,7 +135,25 @@ Now we can use the `SparkSession` object we just create `spark` to load our data
 >>> houseSDFSmall = houseSDF.sample(False, 0.1, seed=10)
 ~~~
 {: .bash}
-Here we have read in the csv file 'houses_clean.csv' and stored the data in `houseSDF`. Then we create a sample from the total data. This smaller set will allow us to see how a subset of the data looks. If you data is very large this is important to do because in order to plot the data it will need to fit onto one machine. In this case however we are actually only using one machine and the data set isn't that large but in theory that data set could be very large and distributed across many machines. The first parameter of the `sample` function indicates if it should sample "with replacement" which means that once a particular houses data is chosen it can in theory be picked again. In our case we indicated we don't want replacement so each house chosen will correspond to a different house in the original dataset. Next we convert the spark dataframe to a pandas dataframe in order to plot it.
+Here we have read in the csv file 'houses_clean.csv' and stored the data in `houseSDF`. To get some idea of the data is like we can start by looking at the description of a column in the spark dataframe
+~~~
+>>> houseSDF.describe(["price"]).show()
+~~~
+{: .bash}
+~~~
++-------+------------------+
+|summary|             price|
++-------+------------------+
+|  count|             21613|
+|   mean| 540088.1417665294|
+| stddev|367127.19648270035|
+|    min|           75000.0|
+|    max|         7700000.0|
++-------+------------------+
+~~~
+{: .output}
+
+Then we create a sample from the total data. This smaller set will allow us to see how a subset of the data looks. If you data is very large this is important to do because in order to plot the data it will need to fit onto one machine. In this case however we are actually only using one machine and the data set isn't that large but in theory that data set could be very large and distributed across many machines. The first parameter of the `sample` function indicates if it should sample "with replacement" which means that once a particular houses data is chosen it can in theory be picked again. In our case we indicated we don't want replacement so each house chosen will correspond to a different house in the original dataset. Next we convert the spark dataframe to a pandas dataframe in order to plot it.
 ~~~
 >>> housePDFSmall = houseSDFSmall.toPandas()
 >>> housePDFSmall.plot(x="sqft_living",y="price",kind="scatter")
@@ -167,7 +195,7 @@ Now create a pipeline that first vectorizes our dataframe and then fits our line
 Now we can view the linear regression model 
 ~~~
 >>> y0=lrModel.stages[1].intercept
->>> print(y0)
+>>> print("intercept=",y0)
 ~~~
 {: .bash}
 ~~~
@@ -176,7 +204,7 @@ Now we can view the linear regression model
 {: .output}
 ~~~
 >>> m=lrModel.stages[1].coefficients[0]
->>> print(m)
+>>> print("coefficients(slope)=",m)
 ~~~
 {: .bash}
 ~~~
@@ -195,4 +223,49 @@ Now we can view the linear regression model
 {: .bash}
 
 ![sqft_living vs. price with linear fit](../fig/machine_learning/sqft_living_vs_price_fit.png)
+
+> ## How does the fit change when including more features?
+> Try adding more 
+{: .challenge}
 ## Assessing the model
+Now that we have a model and visualized it we will want to be able to discriminate quantitatively between different models. One of the simplest ways to measure the quality of a linear model is the root mean square error between the model and observations. For this we will use the `testingSetSDF` created previously. Thus far all our work has been with `trainingSetSDF` used to create our model. The first step in assessing our model is to create some predictions based on `testingSetSDF`
+~~~
+>>> predictions = lrModel.transform(testingSetSDF).select("id","price","Predicted_price")
+~~~
+{: .bash}
+Next we create an evaluator for our regression model and calculate the rms error
+~~~
+>>> from pyspark.ml.evaluation import RegressionEvaluator
+>>> regEval = RegressionEvaluator(predictionCol="Predicted_price",labelCol="price",metricName="rmse")
+>>> rmse = regEval.evaluate(predictions)
+>>> print(rmse)
+~~~
+{: .bash}
+~~~
+238581.1949454162
+~~~
+{: .output}
+which represents a "characteristic" error of our model. In this case it is quite large, $238,000, for comparison lets take a look at the average house price
+~~~
+>>> testingSetSDF.describe(["price"]).show()
+~~~
+{: .bash}
+~~~
++-------+------------------+
+|summary|             price|
++-------+------------------+
+|  count|              2142|
+|   mean| 522847.8590102708|
+| stddev|331835.64842428756|
+|    min|           82500.0|
+|    max|         4489000.0|
++-------+------------------+
+~~~
+{: .output}
+we see that it is about half the average house price.
+
+> ## Can you get a better linear model?
+> Try various combinations of features to see if you can get a lower rmse.
+{: .challenge}
+
+
