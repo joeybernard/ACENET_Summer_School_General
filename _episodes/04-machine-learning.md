@@ -21,9 +21,9 @@ keypoints:
 {: .prereq}
 
 ## Setup
-In this episode we will explore housing data from Seattle Washington. The data set was originally posted on [kaggle house sales](https://www.kaggle.com/harlfoxem/housesalesprediction) but I have done some cleaning of the data (e.g. removing quotes) and we will use the cleaned data set as the starting point. 
+In this episode we will use housing sales data from Seattle Washington to explore [Apache Spark](http://spark.apache.org/) and its machine learning library [MLlib](http://spark.apache.org/mllib/). The data set was originally posted on [kaggle](https://www.kaggle.com/harlfoxem/housesalesprediction) but I have done some cleaning of the data (e.g. removing quotes) and we will use the cleaned data set as the starting point to save some time. A question that might be asked of this data set is, based on the features of a house can we predict a price of a house?
 
-Lets get started. First, connect to an ACENET cluster 
+Lets get started. First, connect to an ACENET cluster
 
 ~~~
 $ ssh glooscap.ace-net.ca
@@ -38,7 +38,7 @@ $ cd ml_spark
 ~~~
 {: .bash}
 
-Now lets download the cleaned data set with
+Now download the cleaned data set with
 ~~~
 wget https://github.com/joeybernard/ACENET_Summer_School_General/raw/gh-pages/data/machine_learning/houses_clean.csv
 ~~~
@@ -52,7 +52,7 @@ $ ls
 houses_clean.csv
 ~~~
 {: .output}
-Lets take a look at the first bit of the data to see what it contains
+Lets take a look at the first few lines of house data to see what it contains
 ~~~
 $ head houses_clean.csv
 ~~~
@@ -71,7 +71,15 @@ id,date,price,bedrooms,bathrooms,sqft_living,sqft_lot,floors,waterfront,view,con
 ~~~
 {: .output}
 
-To start working with spark lets load the Spark module and dependencies. We are going to be working with a class in Spark known as a `Dataframe` which requires Spark version 2.0.0 or greater. Run
+Here you can see various "features" of each house listing. Some features may influence the price of the house, for example the amount of livable space, `sqft_living`, or the location (`lat`,`long`).
+
+To start working with Spark lets load the Spark module and dependencies. We are going to be working with something known as a **dataframe** which requires Spark version 2.0.0 or greater.
+
+> ## Check Spark versions when reading documentation
+> There were a large number of changes to Spark in version 2.0.0. While browsing for documentation or tutorials always make sure the documentation is current to the version of Spark you are using. Spark is still in a very active development phase and large changes are frequent.
+{: .callout}
+
+To prepare our ACENET environment to work with spark run the following commands:
 
 ~~~
 $ module purge
@@ -82,7 +90,7 @@ to give us a clean slate so we are all starting from the same point, then
 $ module load java/8u45 gcc python/3.4.1 spark/2.0.0
 ~~~
 {: .bash}
-to load the modules. Next we will start up the python spark shell `pyspark` by running the command
+to load the spark module and dependencies. Next we will start up the python spark shell, `pyspark`, by running the command
 
 ~~~
 $ pyspark
@@ -90,15 +98,13 @@ $ pyspark
 {:.bash}
 
 ~~~
-Python 2.6.6 (r266:84292, Aug  9 2016, 06:11:56)
-[GCC 4.4.7 20120313 (Red Hat 4.4.7-17)] on linux2
+Python 3.4.1 (default, Jun  8 2016, 16:01:04)
+[GCC 4.4.7 20120313 (Red Hat 4.4.7-17)] on linux
 Type "help", "copyright", "credits" or "license" for more information.
-/usr/local/spark-2.0.0/python/pyspark/sql/context.py:477: DeprecationWarning: HiveContext is deprecated in Spark 2.0.0. Please use SparkSession.builder.enableHiveSupport().getOrCreate() instead.
-  DeprecationWarning)
 Using Spark's default log4j profile: org/apache/spark/log4j-defaults.properties
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel).
-17/03/29 13:24:11 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+17/04/10 14:44:06 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 Welcome to
       ____              __
      / __/__  ___ _____/ /__
@@ -106,54 +112,85 @@ Welcome to
    /__ / .__/\_,_/_/ /_/\_\   version 2.0.0
       /_/
 
-Using Python version 2.6.6 (r266:84292, Aug  9 2016 06:11:56)
+Using Python version 3.4.1 (default, Jun  8 2016 16:01:04)
 SparkSession available as 'spark'.
 >>>
 ~~~
 {: .output}
+
+we are now in the python spark shell. The `>>>` is the prompt for us to enter python code lines in the python spark shell. We will use the `>>>` to denote commands run in this shell.
 
 > ## Running a script
 > We are working in the pyspark shell for this episode as it works well for quickly trying things out. However it is often nicer to work with python scripts to avoid re-type many lines when mistakes are made and as a way to save the work you have done for reuse and future reference. You can run python scripts you write with spark using the `spark-submit` command passing it the path and name of your python script.
 {: .callout}
 
 ## Visualizing the data
+One of the first steps to exploring data is visualizing it to get an overall impression of the data. Start by loading the data into a **dataframe**. Two of the leading languages for data analysis Python (using the [Pandas](http://pandas.pydata.org/) library) and R have similar data frame constructs and were likely part of the inspiration for Spark to adopt a similar construct. A **dataframe** organizes data into named columns and as such is a natural fit to load our CSV file into.
+
+The entry point for working with Spark's dataframes is the **SparkSession**. A SparkSession is used to set and get configuration options in your spark environment and are used to create dataframes in a variety of ways, such as reading from a file.
+
+~~~
+>>> import pyspark.sql.session as pys
+>>> spark = pys.SparkSession.builder.getOrCreate()
+~~~
+{: .bash}
+Now we can use the `SparkSession` we just created, `spark`, to load our data into a new dataframe. Spark dataframes are very similar to Pandas dataframes, in fact you can convert a spark dataframe into a Pandas dataframe, which is what we will do to plot our data.
+~~~
+>>> houseSDF = spark.read.csv("file:///home/cgeroux/ml_spark/houses_clean.csv", header=True, inferSchema=True)
+~~~
+{:.bash}
+When you run the above command you will see a couple warning messages something like:
+~~~
+17/04/18 17:11:03 WARN ObjectStore: Version information not found in metastore. hive.metastore.schema.verification is not enabled so recording the schema version 1.2.0
+17/04/18 17:11:03 WARN ObjectStore: Failed to get database default, returning NoSuchObjectException
+~~~
+{: .output}
+
+These warnings result because we don't have a database configured for our SparkSession. In this case it creates a new database for us. You can see this if you look in the `ml_spark` directory we are working with. In another terminal on glooscap do the following
+~~~
+$ cd ~/ml_spark
+$ ls 
+~~~
+{: .bash}
+~~~
+derby.log  houses_clean.csv  metastore_db
+~~~
+{: .output}
+you can see that two new files were created `derby.log` and `mestastore_db`. One is the log file for your newly created database and the other is a directory containing the database.
+
+~~~
+>>> houseSDFSmall = houseSDF.sample(False, 0.1, seed=10)
+~~~
+{: .bash}
+Here we have read in the csv file 'houses_clean.csv' and stored the data in `houseSDF`. To get some idea of the data is like we can start by looking at the description of a column in the spark dataframe
+~~~
+>>> houseSDF.describe(["price","sqft_living"]).show()
+~~~
+{: .bash}
+~~~
++-------+------------------+------------------+
+|summary|             price|       sqft_living|
++-------+------------------+------------------+
+|  count|             21613|             21613|
+|   mean| 540088.1417665294|2079.8997362698374|
+| stddev|367127.19648270035| 918.4408970468096|
+|    min|           75000.0|             290.0|
+|    max|         7700000.0|           13540.0|
++-------+------------------+------------------+
+~~~
+{: .output}
+
+Then we create a sample from the total data. This smaller set will allow us to see how a subset of the data looks. If you data is very large this is important to do because in order to plot the data it will need to fit onto one machine. In this case however we are actually only using one machine and the data set isn't that large but in theory that data set could be very large and distributed across many machines. The first parameter of the `sample` function indicates if it should sample "with replacement" which means that once a particular houses data is chosen it can in theory be picked again. In our case we indicated we don't want replacement so each house chosen will correspond to a different house in the original dataset.
+
 
 ~~~
 >>> import matplotlib.pyplot as plt
 ~~~
 {: .bash}
 
-this loads the matplotlib python module into the shell so that we can access it using the `plt` object. We will use this to show the plots we create. Next lets load the module which allows us to create a spark session and create a new spark sessions
-~~~
->>> import pyspark.sql.session as pys
->>> spark = pys.SparkSession.builder.appName("House Price Prediction").getOrCreate()
-~~~
-{: .bash}
-Now we can use the `SparkSession` object we just create `spark` to load our data into a `DataFrame`. Spark DataFrames are very similar to Pandas DataFrames, in fact you can convert a spark dataframe into a Pandas dataframe, which is what we will do to plot our data.
-~~~
->>> houseSDF = spark.read.csv("file:///home/cgeroux/ml_spark/houses_clean.csv", header=True, inferSchema=True)
->>> houseSDFSmall = houseSDF.sample(False, 0.1, seed=10)
-~~~
-{: .bash}
-Here we have read in the csv file 'houses_clean.csv' and stored the data in `houseSDF`. To get some idea of the data is like we can start by looking at the description of a column in the spark dataframe
-~~~
->>> houseSDF.describe(["price"]).show()
-~~~
-{: .bash}
-~~~
-+-------+------------------+
-|summary|             price|
-+-------+------------------+
-|  count|             21613|
-|   mean| 540088.1417665294|
-| stddev|367127.19648270035|
-|    min|           75000.0|
-|    max|         7700000.0|
-+-------+------------------+
-~~~
-{: .output}
+this loads the matplotlib python module into the shell so that we can access it using the `plt` object. We will use this to show the plots we create. 
 
-Then we create a sample from the total data. This smaller set will allow us to see how a subset of the data looks. If you data is very large this is important to do because in order to plot the data it will need to fit onto one machine. In this case however we are actually only using one machine and the data set isn't that large but in theory that data set could be very large and distributed across many machines. The first parameter of the `sample` function indicates if it should sample "with replacement" which means that once a particular houses data is chosen it can in theory be picked again. In our case we indicated we don't want replacement so each house chosen will correspond to a different house in the original dataset. Next we convert the spark dataframe to a pandas dataframe in order to plot it.
+Next we convert the spark dataframe to a pandas dataframe in order to plot it.
 ~~~
 >>> housePDFSmall = houseSDFSmall.toPandas()
 >>> housePDFSmall.plot(x="sqft_living",y="price",kind="scatter")
