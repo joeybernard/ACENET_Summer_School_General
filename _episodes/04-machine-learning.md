@@ -125,7 +125,7 @@ we are now in the python spark shell. The `>>>` is the prompt for us to enter py
 {: .callout}
 
 ## Visualizing the data
-One of the first steps to exploring data is visualizing it to get an overall impression of the data. Start by loading the data into a **dataframe**. Two of the leading languages for data analysis Python (using the [Pandas](http://pandas.pydata.org/) library) and R have similar data frame constructs and were likely part of the inspiration for Spark to adopt a similar construct. A **dataframe** organizes data into named columns and as such is a natural fit to load our CSV file into.
+One of the first steps to exploring data is visualizing it to get an overall impression of the data. Start by loading the data into a **dataframe**. Two of the leading languages for data analysis Python (using the [Pandas](http://pandas.pydata.org/) library) and R have similar data frame constructs and were likely part of the inspiration for Spark to adopt a similar construct. A **dataframe** organizes data into named columns and as such is a natural fit to load our CSV file into. The data within a Spark dataframe is divided across the memory of multiple nodes, tasks performed on the dataframes are done in a parallel by the processors on the various nodes. In this way Spark can scale to larger datasets by running on more compute nodes.
 
 The entry point for working with Spark's dataframes is the **SparkSession**. A SparkSession is used to set and get configuration options in your spark environment and are used to create dataframes in a variety of ways, such as reading from a file.
 
@@ -139,6 +139,8 @@ Now we can use the `SparkSession` we just created, `spark`, to load our data int
 >>> houseSDF = spark.read.csv("file:///home/cgeroux/ml_spark/houses_clean.csv", header=True, inferSchema=True)
 ~~~
 {:.bash}
+Here we have read in the csv file 'houses_clean.csv' and stored the data in the spark dataframe `houseSDF`. 
+
 When you run the above command you will see a couple warning messages something like:
 ~~~
 17/04/18 17:11:03 WARN ObjectStore: Version information not found in metastore. hive.metastore.schema.verification is not enabled so recording the schema version 1.2.0
@@ -146,7 +148,7 @@ When you run the above command you will see a couple warning messages something 
 ~~~
 {: .output}
 
-These warnings result because we don't have a database configured for our SparkSession. In this case it creates a new database for us. You can see this if you look in the `ml_spark` directory we are working with. In another terminal on glooscap do the following
+These warnings result because we don't have a database configured for our SparkSession. In this case it creates a new database for us. You can see this if you look in the `ml_spark` directory we are working in. In another terminal on glooscap do the following
 ~~~
 $ cd ~/ml_spark
 $ ls 
@@ -156,13 +158,9 @@ $ ls
 derby.log  houses_clean.csv  metastore_db
 ~~~
 {: .output}
-you can see that two new files were created `derby.log` and `mestastore_db`. One is the log file for your newly created database and the other is a directory containing the database.
+you can see that two new files were created `derby.log` and `mestastore_db`. One is a log file for your newly created database and the other is a directory containing the database.
 
-~~~
->>> houseSDFSmall = houseSDF.sample(False, 0.1, seed=10)
-~~~
-{: .bash}
-Here we have read in the csv file 'houses_clean.csv' and stored the data in `houseSDF`. To get some idea of the data is like we can start by looking at the description of a column in the spark dataframe
+To get some idea of what the data is like we can start by looking at the description of a column in the spark dataframe
 ~~~
 >>> houseSDF.describe(["price","sqft_living"]).show()
 ~~~
@@ -180,8 +178,11 @@ Here we have read in the csv file 'houses_clean.csv' and stored the data in `hou
 ~~~
 {: .output}
 
-Then we create a sample from the total data. This smaller set will allow us to see how a subset of the data looks. If you data is very large this is important to do because in order to plot the data it will need to fit onto one machine. In this case however we are actually only using one machine and the data set isn't that large but in theory that data set could be very large and distributed across many machines. The first parameter of the `sample` function indicates if it should sample "with replacement" which means that once a particular houses data is chosen it can in theory be picked again. In our case we indicated we don't want replacement so each house chosen will correspond to a different house in the original dataset.
-
+We can create a sample from the total data. This smaller set will allow us to see how a subset of the data looks. If you data is very large this is important to do because in order to plot the data it will need to fit onto one machine. In this case however we are actually only using one machine and the data set isn't that large but in theory that data set could be very large and distributed across many machines. The first parameter of the `sample` function indicates if it should sample "with replacement" which means that once a particular houses data is chosen it can in theory be picked again. In our case we indicated we don't want replacement so each house chosen will correspond to a different house in the original dataset.
+~~~
+>>> houseSDFSmall = houseSDF.sample(False, 0.1, seed=10)
+~~~
+{: .bash}
 
 ~~~
 >>> import matplotlib.pyplot as plt
