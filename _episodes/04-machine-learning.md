@@ -21,7 +21,7 @@ keypoints:
 {: .prereq}
 
 ## Setup
-In this episode we will use housing sales data from Seattle Washington to explore [Apache Spark](http://spark.apache.org/) and its machine learning library [MLlib](http://spark.apache.org/mllib/). The data set was originally posted on [kaggle](https://www.kaggle.com/harlfoxem/housesalesprediction) but I have done some cleaning of the data (e.g. removing quotes) and we will use the cleaned data set as the starting point to save some time. A question that might be asked of this data set is, based on the features of a house can we predict a price of a house?
+In this episode we will use housing sales data from Seattle Washington to explore [Apache Spark](http://spark.apache.org/) and its machine learning library [MLlib](http://spark.apache.org/mllib/). The data set was originally posted on [kaggle](https://www.kaggle.com/harlfoxem/housesalesprediction) but I have done some cleaning of the data (e.g. removing quotes) and we will use the cleaned data set as the starting point to save some time. A question that might be asked of this data set is, based on the features of a house can we predict the price of a house?
 
 Lets get started. First, connect to an ACENET cluster
 
@@ -76,7 +76,7 @@ Here you can see various "features" of each house listing. Some features may inf
 To start working with Spark lets load the Spark module and dependencies. We are going to be working with something known as a **dataframe** which requires Spark version 2.0.0 or greater.
 
 > ## Check Spark versions when reading documentation
-> There were a large number of changes to Spark in version 2.0.0. While browsing for documentation or tutorials always make sure the documentation is current to the version of Spark you are using. Spark is still in a very active development phase and large changes are frequent.
+> There were a large number of changes to Spark in version 2.0.0 from previous versions. While browsing for documentation or tutorials always make sure the documentation is current to the version of Spark you are using. Spark is still in a very active development phase and large changes are frequent.
 {: .callout}
 
 To prepare our ACENET environment to work with spark run the following commands:
@@ -127,14 +127,14 @@ we are now in the python spark shell. The `>>>` is the prompt for us to enter py
 ## Visualizing the data
 One of the first steps to exploring data is visualizing it to get an overall impression of the data. Start by loading the data into a **dataframe**. Two of the leading languages for data analysis Python (using the [Pandas](http://pandas.pydata.org/) library) and R have similar data frame constructs and were likely part of the inspiration for Spark to adopt a similar construct. A **dataframe** organizes data into named columns and as such is a natural fit to load our CSV file into. The data within a Spark dataframe is divided across the memory of multiple nodes, tasks performed on the dataframes are done in a parallel by the processors on the various nodes. In this way Spark can scale to larger datasets by running on more compute nodes.
 
-The entry point for working with Spark's dataframes is the **SparkSession**. A SparkSession is used to set and get configuration options in your spark environment and are used to create dataframes in a variety of ways, such as reading from a file.
+The entry point for working with Spark's dataframes is the **SparkSession**. A SparkSession is used to set and get configuration options in your spark environment and is used to create dataframes in a variety of ways, such as reading from a file.
 
 ~~~
 >>> import pyspark.sql.session as pys
 >>> spark = pys.SparkSession.builder.getOrCreate()
 ~~~
 {: .bash}
-Now we can use the `SparkSession` we just created, `spark`, to load our data into a new dataframe. Spark dataframes are very similar to Pandas dataframes, in fact you can convert a spark dataframe into a Pandas dataframe, which is what we will do to plot our data.
+Now we can use the `SparkSession` we just created, `spark`, to load our data into a new dataframe.
 ~~~
 >>> houseSDF = spark.read.csv("file:///home/cgeroux/ml_spark/houses_clean.csv", header=True, inferSchema=True)
 ~~~
@@ -148,19 +148,40 @@ When you run the above command you will see a couple warning messages something 
 ~~~
 {: .output}
 
-These warnings result because we don't have a database configured for our SparkSession. In this case it creates a new database for us. You can see this if you look in the `ml_spark` directory we are working in. In another terminal on glooscap do the following
+These warnings result because we don't have a database configured for our SparkSession. In this case it creates a new database for us. If you look in the `ml_spark` directory we are working in you will see an additional file `derby.log` which contains information about the creation of the database and the directory `metastore_db` which contains the database files.
+
+To see a list of all columns available in a Spark dataframe use the `printSchema` function. It also lists the type of the data (e.g. `long`, `string`, `double` etc.) and weather the column may contain null entries.
 ~~~
-$ cd ~/ml_spark
-$ ls 
+>>> houseSDF.printSchema()
 ~~~
 {: .bash}
 ~~~
-derby.log  houses_clean.csv  metastore_db
+root
+ |-- id: long (nullable = true)
+ |-- date: string (nullable = true)
+ |-- price: double (nullable = true)
+ |-- bedrooms: double (nullable = true)
+ |-- bathrooms: double (nullable = true)
+ |-- sqft_living: double (nullable = true)
+ |-- sqft_lot: double (nullable = true)
+ |-- floors: double (nullable = true)
+ |-- waterfront: double (nullable = true)
+ |-- view: double (nullable = true)
+ |-- condition: double (nullable = true)
+ |-- grade: double (nullable = true)
+ |-- sqft_above: double (nullable = true)
+ |-- sqft_basement: double (nullable = true)
+ |-- yr_built: double (nullable = true)
+ |-- yr_renovated: double (nullable = true)
+ |-- zipcode: double (nullable = true)
+ |-- lat: double (nullable = true)
+ |-- long: double (nullable = true)
+ |-- sqft_living15: double (nullable = true)
+ |-- sqft_lot15: double (nullable = true)
 ~~~
 {: .output}
-you can see that two new files were created `derby.log` and `mestastore_db`. One is a log file for your newly created database and the other is a directory containing the database.
 
-To get some idea of what the data is like we can start by looking at the description of a column in the spark dataframe
+To start to get a "feel" for the data looking at the description of a few columns in the spark dataframe gives us the count, mean, standard deviation, and range of the data.
 ~~~
 >>> houseSDF.describe(["price","sqft_living"]).show()
 ~~~
@@ -178,34 +199,51 @@ To get some idea of what the data is like we can start by looking at the descrip
 ~~~
 {: .output}
 
-We can create a sample from the total data. This smaller set will allow us to see how a subset of the data looks. If you data is very large this is important to do because in order to plot the data it will need to fit onto one machine. In this case however we are actually only using one machine and the data set isn't that large but in theory that data set could be very large and distributed across many machines. The first parameter of the `sample` function indicates if it should sample "with replacement" which means that once a particular houses data is chosen it can in theory be picked again. In our case we indicated we don't want replacement so each house chosen will correspond to a different house in the original dataset.
+We can create a sample from the total data which will allow us to plot a subset of the data. If your data is very large this is important to do because in order to plot the data it will need to fit onto one machine. In this case however we are actually only using one machine and the data set isn't that large but in theory that data set could be very large and distributed across many machines. The first parameter of the `sample` function `False` indicates that it should sample "without replacement" which means that once a particular houses data is chosen it can not be picked again. If set to `True` individual data elements can be chosen multiple times. The second parameter `0.1` indicates that we want a sample that is 10% the size of the original data set. The final parameter provides a `seed` to use for the random sampling. Choosing the same seed from one execution to another ensures the same random sample is chosen. This is helpful if reproducibility is needed (e.g. for debugging, testing, or comparison).
 ~~~
 >>> houseSDFSmall = houseSDF.sample(False, 0.1, seed=10)
 ~~~
 {: .bash}
 
+Spark dataframes are very similar to Pandas dataframes, in fact you can convert a spark dataframe into a Pandas dataframe, which is what we will do to plot our data.
+~~~
+>>> housePDFSmall = houseSDFSmall.toPandas()
+>>> housePDFSmall.plot(x="sqft_living",y="price",kind="scatter")
+~~~
+{: .bash}
+~~~
+<matplotlib.axes._subplots.AxesSubplot object at 0x7f7ad5411cf8>
+~~~
+{: .output}
+
+These function calls have created a Pandas dataframe `housePDFSmall` and created a plot. In order to see the plot we must tell it to show us the plot. Pandas uses matplotlib to do its plotting so we can use the matplotlib function `show` to show the plot created for the dataframe. First, import the matplotlib python model with
 ~~~
 >>> import matplotlib.pyplot as plt
 ~~~
 {: .bash}
 
-this loads the matplotlib python module into the shell so that we can access it using the `plt` object. We will use this to show the plots we create. 
-
-Next we convert the spark dataframe to a pandas dataframe in order to plot it.
+Then we can use the `plt` object to show the plot with
 ~~~
->>> housePDFSmall = houseSDFSmall.toPandas()
->>> housePDFSmall.plot(x="sqft_living",y="price",kind="scatter")
 >>> plt.show()
 ~~~
 {: .bash}
+
 ![sqft_living vs. price](../fig/machine_learning/sqft_living_vs_price.png)
 
-> ## How does the price depend on other features?
-> Try plotting some of the other feature columns against the price to see how they might impact house prices.
+> ## Do other features show a relation to price?
+> Try plotting some of the other feature columns against the price to see if there are other potential relationships between house features and their prices.
+> > ## Solution
+> > to plot another feature do something like:
+> > ~~~
+> > >>> housePDFSmall.plot(x="yr_built",y="price",kind="scatter")
+> > >>> plt.show()
+> > ~~~
+> > {: .bash}
+> {: .solution}
 {: .challenge}
 
 # Modelling the data
-Split the data into two groups, a training set used to build our model, and a testing set test our model with.
+Split the data into two groups, a training set used to build our model, and a testing set to test our model.
 ~~~
 >>> testingSetSDF, trainingSetSDF=houseSDF.randomSplit([0.1,0.9], seed=10)
 ~~~
