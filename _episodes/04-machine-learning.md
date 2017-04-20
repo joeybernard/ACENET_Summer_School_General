@@ -235,7 +235,7 @@ Then we can use the `plt` object to show the plot with
 > > ## Solution
 > > to plot another feature do something like:
 > > ~~~
-> > >>> housePDFSmall.plot(x="yr_built",y="price",kind="scatter")
+> > >>> housePDFSmall.plot(x="grade",y="price",kind="scatter")
 > > >>> plt.show()
 > > ~~~
 > > {: .bash}
@@ -268,6 +268,32 @@ Now create a pipeline that first vectorizes our dataframe and then fits our line
 >>> lrModel = lrPipeline.fit(trainingSetSDF)
 ~~~
 {: .bash}
+~~~
+17/04/20 15:29:56 WARN BLAS: Failed to load implementation from: com.github.fommil.netlib.NativeSystemBLAS
+17/04/20 15:29:56 WARN BLAS: Failed to load implementation from: com.github.fommil.netlib.NativeRefBLAS
+17/04/20 15:29:56 WARN LAPACK: Failed to load implementation from: com.github.fommil.netlib.NativeSystemLAPACK
+17/04/20 15:29:56 WARN LAPACK: Failed to load implementation from: com.github.fommil.netlib.NativeRefLAPACK
+~~~
+{: .output}
+These warnings indicate that the native implementations of BLAS and LAPACK are not being used, instead versions implemented in java are being used instead. While this version should work perfectly fine it will have poorer performance than native systems libraries.
+
+To visualize our new model, lets apply it to our small dataframe `houseSDFSmall` and visualize the predictions
+~~~
+>>> predictions = lrModel.transform(houseSDFSmall).select("id","price","Predicted_price","sqft_living")
+>>> predictionsPDF = predictions.toPandas()
+>>> plt.plot(predictionsPDF["sqft_living"],predictionsPDF["price"],'ro')
+>>> plt.plot(predictionsPDF["sqft_living"],predictionsPDF["Predicted_price"],'bo')
+>>> plt.xlabel("sqft_living")
+>>> plt.ylabel("price")
+>>> handles,labels=plt.gca().get_legend_handles_labels()
+>>> plt.legend(handles,labels,loc=2)
+>>> plt.show()
+~~~
+{: .bash}
+
+![sqft_living vs. price with linear fit](../fig/machine_learning/sqft_living_vs_price_fit.png)
+
+<!--
 Now we can view the linear regression model 
 ~~~
 >>> y0=lrModel.stages[1].intercept
@@ -293,12 +319,45 @@ Now we can view the linear regression model
 >>> import pandas as pd
 >>> lineDF=pd.DataFrame({'sqft_living':pd.Series([minSqft,maxSqft]),'price_fit':pd.Series([m*minSqft+y0,m*maxSqft+y0])})
 >>> axis=housePDFSmall.plot(x="sqft_living",y="price",kind="scatter")
->>> lineDF.plot(x="sqft_living",y="price_fit",ax=axis,style='r-')
+>>> lineDF.plot(x="sqft_living",y="price_fit",ax=axis,style='ro')
 >>> plt.show()
 ~~~
 {: .bash}
 
 ![sqft_living vs. price with linear fit](../fig/machine_learning/sqft_living_vs_price_fit.png)
+-->
+
+
+
+
+> ## Include more features in the model
+> 
+> > ## Solution
+> > Make a new vectorizer including another feature
+> > ~~~
+> > >>> vectorizerGR = VectorAssembler(inputCols = ["sqft_living","grade"], outputCol = "features")
+> > ~~~
+> > {: .bash}
+> >
+> > Create a new pipeline using your new vectorizer
+> > ~~~
+> > >>> lrPipelineGR = Pipeline(stages=[vectorizerGR,lr])
+> > ~~~
+> > {: .bash}
+> >
+> > Make a new model with the new pipeline
+> > ~~~
+> > >>> lrModelGR = lrPipelineGR.fit(trainingSetSDF)
+> > ~~~
+> > {: .bash}
+> >
+> > Make new predictions with your 
+> > ~~~
+> > >>> predictionsYrB = lrModel.transform(houseSDFSmall).select("id","price","Predicted_price","sqft_living","yr_built")
+> > ~~~
+> > {: .bash}
+> {: .solution}
+{: .challenge}
 
 > ## How does the fit change when including more features?
 > Try adding more 
