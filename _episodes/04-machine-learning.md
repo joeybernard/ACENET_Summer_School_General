@@ -73,7 +73,7 @@ id,date,price,bedrooms,bathrooms,sqft_living,sqft_lot,floors,waterfront,view,con
 
 Here you can see various "features" of each house listing. Some features may influence the price of the house, for example the amount of livable space, `sqft_living`, or the location (`lat`,`long`).
 
-To start working with Spark lets load the Spark module and dependencies. We are going to be working with something known as a **dataframe** which requires Spark version 2.0.0 or greater.
+To start working with Spark lets load the Spark module and dependencies. We are going to be working with something known as a **DataFrame** which requires Spark version 2.0.0 or greater.
 
 > ## Check Spark versions when reading documentation
 > There were a large number of changes to Spark in version 2.0.0 from previous versions. While browsing for documentation or tutorials always make sure the documentation is current to the version of Spark you are using. Spark is still in a very active development phase and large changes are frequent.
@@ -125,7 +125,7 @@ we are now in the python spark shell. The `>>>` is the prompt for us to enter py
 {: .callout}
 
 ## Visualizing the data
-One of the first steps to exploring data is visualizing it to get an overall impression of the data. Start by loading the data into a **dataframe**. Two of the leading languages for data analysis Python (using the [Pandas](http://pandas.pydata.org/) library) and R have similar data frame constructs and were likely part of the inspiration for Spark to adopt a similar construct. A **dataframe** organizes data into named columns and as such is a natural fit to load our CSV file into. The data within a Spark dataframe is divided across the memory of multiple nodes, tasks performed on the dataframes are done in a parallel by the processors on the various nodes. In this way Spark can scale to larger datasets by running on more compute nodes.
+One of the first steps to exploring data is visualizing it to get an overall impression of the data. Start by loading the data into a **DataFrame**. Two of the leading languages for data analysis Python (using the [Pandas](http://pandas.pydata.org/) library) and R have similar data frame constructs and were likely part of the inspiration for Spark to adopt a similar construct. A **DataFrame** organizes data into named columns and as such is a natural fit to load our CSV file into. The data within a Spark dataframe is divided across the memory of multiple nodes, tasks performed on the dataframes are done in a parallel by the processors on the various nodes. In this way Spark can scale to larger datasets by running on more compute nodes.
 
 The entry point for working with Spark's dataframes is the **SparkSession**. A SparkSession is used to set and get configuration options in your spark environment and is used to create dataframes in a variety of ways, such as reading from a file.
 
@@ -133,12 +133,12 @@ The entry point for working with Spark's dataframes is the **SparkSession**. A S
 >>> import pyspark.sql.session as pys
 >>> spark = pys.SparkSession.builder.getOrCreate()
 ~~~
-{: .bash}
+{: .python}
 Now we can use the `SparkSession` we just created, `spark`, to load our data into a new dataframe.
 ~~~
 >>> houseSDF = spark.read.csv("file:///home/cgeroux/ml_spark/houses_clean.csv", header=True, inferSchema=True)
 ~~~
-{:.bash}
+{:.python}
 Here we have read in the csv file 'houses_clean.csv' and stored the data in the spark dataframe `houseSDF`. 
 
 When you run the above command you will see a couple warning messages something like:
@@ -150,34 +150,13 @@ When you run the above command you will see a couple warning messages something 
 
 These warnings result because we don't have a database configured for our SparkSession. In this case it creates a new database for us. If you look in the `ml_spark` directory we are working in you will see an additional file `derby.log` which contains information about the creation of the database and the directory `metastore_db` which contains the database files.
 
-To see a list of all columns available in a Spark dataframe use the `printSchema` function. It also lists the type of the data (e.g. `long`, `string`, `double` etc.) and weather the column may contain null entries.
+To see a list of all columns available in a Spark dataframe look at the `columns` attribute of the dataframe, which is a list of column names.
 ~~~
->>> houseSDF.printSchema()
+>>> houseSDF.columns
 ~~~
-{: .bash}
+{: .python}
 ~~~
-root
- |-- id: long (nullable = true)
- |-- date: string (nullable = true)
- |-- price: double (nullable = true)
- |-- bedrooms: double (nullable = true)
- |-- bathrooms: double (nullable = true)
- |-- sqft_living: double (nullable = true)
- |-- sqft_lot: double (nullable = true)
- |-- floors: double (nullable = true)
- |-- waterfront: double (nullable = true)
- |-- view: double (nullable = true)
- |-- condition: double (nullable = true)
- |-- grade: double (nullable = true)
- |-- sqft_above: double (nullable = true)
- |-- sqft_basement: double (nullable = true)
- |-- yr_built: double (nullable = true)
- |-- yr_renovated: double (nullable = true)
- |-- zipcode: double (nullable = true)
- |-- lat: double (nullable = true)
- |-- long: double (nullable = true)
- |-- sqft_living15: double (nullable = true)
- |-- sqft_lot15: double (nullable = true)
+['id', 'date', 'price', 'bedrooms', 'bathrooms', 'sqft_living', 'sqft_lot', 'floors', 'waterfront', 'view', 'condition', 'grade', 'sqft_above', 'sqft_basement', 'yr_built', 'yr_renovated', 'zipcode', 'lat', 'long', 'sqft_living15', 'sqft_lot15']
 ~~~
 {: .output}
 
@@ -185,7 +164,7 @@ To start to get a "feel" for the data looking at the description of a few column
 ~~~
 >>> houseSDF.describe(["price","sqft_living"]).show()
 ~~~
-{: .bash}
+{: .python}
 ~~~
 +-------+------------------+------------------+
 |summary|             price|       sqft_living|
@@ -199,18 +178,18 @@ To start to get a "feel" for the data looking at the description of a few column
 ~~~
 {: .output}
 
-We can create a sample from the total data which will allow us to plot a subset of the data. If your data is very large this is important to do because in order to plot the data it will need to fit onto one machine. In this case however we are actually only using one machine and the data set isn't that large but in theory that data set could be very large and distributed across many machines. The first parameter of the `sample` function `False` indicates that it should sample "without replacement" which means that once a particular houses data is chosen it can not be picked again. If set to `True` individual data elements can be chosen multiple times. The second parameter `0.1` indicates that we want a sample that is 10% the size of the original data set. The final parameter provides a `seed` to use for the random sampling. Choosing the same seed from one execution to another ensures the same random sample is chosen. This is helpful if reproducibility is needed (e.g. for debugging, testing, or comparison).
+We can create a sample from the total data which will allow us to plot a subset of the data. If your data is very large this is important to do because in order to plot the data it will need to fit onto one machine. In this case however we are actually only using one machine and the data set isn't that large but in theory that data set could be very large and distributed across many machines. The first parameter of the `sample` function `False` indicates that it should sample "without replacement" which means that once a particular house's data is chosen it can not be picked again. If set to `True` individual data elements can be chosen multiple times. The second parameter `0.1` indicates that we want a sample that is 10% the size of the original data set. The final parameter provides a `seed` to use for the random sampling. Choosing the same seed from one execution to another ensures the same random sample is chosen. This is helpful if reproducibility is needed (e.g. for debugging, testing, or comparison).
 ~~~
 >>> houseSDFSmall = houseSDF.sample(False, 0.1, seed=10)
 ~~~
-{: .bash}
+{: .python}
 
 Spark dataframes are very similar to Pandas dataframes, in fact you can convert a spark dataframe into a Pandas dataframe, which is what we will do to plot our data.
 ~~~
 >>> housePDFSmall = houseSDFSmall.toPandas()
 >>> housePDFSmall.plot(x="sqft_living",y="price",kind="scatter")
 ~~~
-{: .bash}
+{: .python}
 ~~~
 <matplotlib.axes._subplots.AxesSubplot object at 0x7f7ad5411cf8>
 ~~~
@@ -220,13 +199,13 @@ These function calls have created a Pandas dataframe `housePDFSmall` and created
 ~~~
 >>> import matplotlib.pyplot as plt
 ~~~
-{: .bash}
+{: .python}
 
 Then we can use the `plt` object to show the plot with
 ~~~
 >>> plt.show()
 ~~~
-{: .bash}
+{: .python}
 
 ![sqft_living vs. price](../fig/machine_learning/sqft_living_vs_price.png)
 
@@ -238,36 +217,55 @@ Then we can use the `plt` object to show the plot with
 > > >>> housePDFSmall.plot(x="grade",y="price",kind="scatter")
 > > >>> plt.show()
 > > ~~~
-> > {: .bash}
+> > {: .python}
 > {: .solution}
 {: .challenge}
 
 # Modelling the data
-Split the data into two groups, a training set used to build our model, and a testing set to test our model.
+To create a model of how house prices depend on their features we will split the data into two groups, a training set used to build our model, and a testing set to test our model. The testing set allows us to assess how well our model works for data not included in our training set and gives us some indication how well it works for predicting house prices from the chosen features.
 ~~~
 >>> testingSetSDF, trainingSetSDF=houseSDF.randomSplit([0.1,0.9], seed=10)
 ~~~
-{: .bash}
+{: .python}
 
-Create an object which can be used to change the DataFrame data into a vector which can be used in a linear regression model.
-~~~
->>> from pyspark.ml.feature import VectorAssembler
->>> vectorizer = VectorAssembler(inputCols = ["sqft_living"], outputCol = "features")
-~~~
-{: .bash}
-Next create the linear regression model
+To model how the price depends on house features we will use linear regression.
+
 ~~~
 >>> from pyspark.ml.regression import LinearRegression
->>> lr = LinearRegression(maxIter = 100, regParam = 1e-8, predictionCol = "Predicted_price", labelCol = "price")
+>>> lr = LinearRegression(predictionCol="predicted_price", labelCol="price", featuresCol="features",regParam=0.1)
 ~~~
-{: .bash}
-Now create a pipeline that first vectorizes our dataframe and then fits our linear regression model to the data
+{: .python}
+
+This creates a new `LinearRegression` object which will be fit to a DataFrame with `features` column to create a new linear regression model. A linear regression model can then be applied to a DataFrame creating a `predicted_price` column from the `features` column. The `regParam` indicates how much regularization should be included in the linear regression model. Regularization is an extra term added to the minimization function which adds a penalty on overly complex fits helping reduce the likelihood of over fitting to the data.
+
+The "features" column that the `LinearRegression` object and linear regression model expects should be a vector containing all the features for that house we wish to use to predict the price. To add such a column to our DataFrame we will use a `VectorAssembler`
+
 ~~~
->>> from pyspark.ml import Pipeline
->>> lrPipeline = Pipeline(stages=[vectorizer,lr])
->>> lrModel = lrPipeline.fit(trainingSetSDF)
+>>> from pyspark.ml.feature import VectorAssembler
+>>> colsToVecColFeatures = VectorAssembler(inputCols = ["sqft_living"], outputCol = "features")
 ~~~
-{: .bash}
+{: .python}
+This `VectorAssembler` object takes the input columns and creates a new output column `features` which is a vector containing all the values in the input columns. We can then use this to create a new `Dataframe` with a "features" column
+
+~~~
+>>> trainingSetFeaturesSDF=colsToVecColFeatures.transform(trainingSetSDF)
+~~~
+{: .python}
+
+To see how the columns have changed
+~~~
+>>> trainingSetFeaturesSDF.columns
+~~~
+{: .python}
+~~~
+['id', 'date', 'price', 'bedrooms', 'bathrooms', 'sqft_living', 'sqft_lot', 'floors', 'waterfront', 'view', 'condition', 'grade', 'sqft_above', 'sqft_basement', 'yr_built', 'yr_renovated', 'zipcode', 'lat', 'long', 'sqft_living15', 'sqft_lot15', 'features']
+~~~
+{: .output}
+Note the new `features` column. Now we can use the `LinearRegression` object we created earlier, `lr` to create a new linear regression model
+~~~
+>>> lrModel=lr.fit(trainingSetFeaturesSDF)
+~~~
+{: .python} 
 ~~~
 17/04/20 15:29:56 WARN BLAS: Failed to load implementation from: com.github.fommil.netlib.NativeSystemBLAS
 17/04/20 15:29:56 WARN BLAS: Failed to load implementation from: com.github.fommil.netlib.NativeRefBLAS
@@ -277,97 +275,101 @@ Now create a pipeline that first vectorizes our dataframe and then fits our line
 {: .output}
 These warnings indicate that the native implementations of BLAS and LAPACK are not being used, instead versions implemented in java are being used instead. While this version should work perfectly fine it will have poorer performance than native systems libraries.
 
-To visualize our new model, lets apply it to our small dataframe `houseSDFSmall` and visualize the predictions
+We can take a look at the intercepts and coefficients of our model
 ~~~
->>> predictions = lrModel.transform(houseSDFSmall).select("id","price","Predicted_price","sqft_living")
+>>> lrModel.intercept
+~~~
+{: .python}
+~~~
+-45940.380004621315
+~~~
+{: .output}
+~~~
+>>> lrModel.coefficients
+~~~
+{: .python}
+~~~
+DenseVector([282.0854])
+~~~
+{: .output}
+
+To visualize our new model, lets apply it to our small dataframe `houseSDFSmall` and visualize the predictions. First add a features column to our DataFrame with
+~~~
+>>> houseSDFSmall=colsToVecColFeatures.transform(houseSDFSmall)
+~~~
+{: .python}
+then apply the model to the `housesSDFSmall` DataFrame creating a new data frame `predictions` which has a new column `predicted_price` generated from our model.
+~~~
+>>> predictions = lrModel.transform(houseSDFSmall).select("id","price","predicted_price","sqft_living")
+~~~
+{: .python}
+Next convert it to a Pandas DataFrame, as before
+~~~
 >>> predictionsPDF = predictions.toPandas()
+~~~
+{: .python}
+and plot two separate sets of data, the `price` and the `predicted` price. In this case instead of using the `plot` function on the Pandas DataFrame we are calling the `matplotlib` plot function directly
+~~~
 >>> plt.plot(predictionsPDF["sqft_living"],predictionsPDF["price"],'ro')
->>> plt.plot(predictionsPDF["sqft_living"],predictionsPDF["Predicted_price"],'bo')
+>>> plt.plot(predictionsPDF["sqft_living"],predictionsPDF["predicted_price"],'bo')
+~~~
+{: .python}
+In this case the `price` will be red circles, `ro`, and the `predicted_price` will be blue circles, `bo`. Next lets add some axis labels so we know what we are looking at
+~~~
 >>> plt.xlabel("sqft_living")
 >>> plt.ylabel("price")
+~~~
+{: .python}
+Finally create a legend to remind us which symbols are `price` and `predicted_price`.
+~~~
 >>> handles,labels=plt.gca().get_legend_handles_labels()
 >>> plt.legend(handles,labels,loc=2)
 >>> plt.show()
 ~~~
-{: .bash}
+{: .python}
 
 ![sqft_living vs. price with linear fit](../fig/machine_learning/sqft_living_vs_price_fit.png)
-
-<!--
-Now we can view the linear regression model 
-~~~
->>> y0=lrModel.stages[1].intercept
->>> print("intercept=",y0)
-~~~
-{: .bash}
-~~~
--45940.53858016282
-~~~
-{: .output}
-~~~
->>> m=lrModel.stages[1].coefficients[0]
->>> print("coefficients(slope)=",m)
-~~~
-{: .bash}
-~~~
-282.08545292501293
-~~~
-{: .output}
-~~~
->>> maxSqft=float(housePDFSmall[["sqft_living"]].max())
->>> minSqft=float(housePDFSmall[["sqft_living"]].min())
->>> import pandas as pd
->>> lineDF=pd.DataFrame({'sqft_living':pd.Series([minSqft,maxSqft]),'price_fit':pd.Series([m*minSqft+y0,m*maxSqft+y0])})
->>> axis=housePDFSmall.plot(x="sqft_living",y="price",kind="scatter")
->>> lineDF.plot(x="sqft_living",y="price_fit",ax=axis,style='ro')
->>> plt.show()
-~~~
-{: .bash}
-
-![sqft_living vs. price with linear fit](../fig/machine_learning/sqft_living_vs_price_fit.png)
--->
-
-
-
 
 > ## Include more features in the model
 > 
 > > ## Solution
-> > Make a new vectorizer including another feature
+> > Make a new `VectorAssembler` including another feature
 > > ~~~
 > > >>> vectorizerGR = VectorAssembler(inputCols = ["sqft_living","grade"], outputCol = "features")
 > > ~~~
-> > {: .bash}
+> > {: .python}
 > >
-> > Create a new pipeline using your new vectorizer
+> > Create a DataFrame with the new `features` column
 > > ~~~
-> > >>> lrPipelineGR = Pipeline(stages=[vectorizerGR,lr])
+> > >>> trainingSetFeaturesGRSDF=vectorizerGR.transform(trainingSetSDF)
 > > ~~~
-> > {: .bash}
+> > {: .python}
 > >
-> > Make a new model with the new pipeline
+> > Make a new model with the new DataFrame
 > > ~~~
-> > >>> lrModelGR = lrPipelineGR.fit(trainingSetSDF)
+> > >>> lrModelGR = lr.fit(trainingSetFeaturesGRSDF)
 > > ~~~
-> > {: .bash}
+> > {: .python}
+> > Add new features column to the `housesSDFSmall`
+> > ~~~
+> > >>> housesSDFSmallGR = vectorizerGR.transform(houseSDFSmall)
+> > ~~~
+> > {: .python}
 > >
-> > Make new predictions with your 
+> > Make new predictions with your new model
 > > ~~~
-> > >>> predictionsYrB = lrModel.transform(houseSDFSmall).select("id","price","Predicted_price","sqft_living","yr_built")
+> > >>> predictionsGR=lrModelGR.transform(housesSDFSmallGR).select("id","price","predicted_price","sqft_living","yr_built")
 > > ~~~
-> > {: .bash}
+> > {: .python}
 > {: .solution}
 {: .challenge}
 
-> ## How does the fit change when including more features?
-> Try adding more 
-{: .challenge}
 ## Assessing the model
 Now that we have a model and visualized it we will want to be able to discriminate quantitatively between different models. One of the simplest ways to measure the quality of a linear model is the root mean square error between the model and observations. For this we will use the `testingSetSDF` created previously. Thus far all our work has been with `trainingSetSDF` used to create our model. The first step in assessing our model is to create some predictions based on `testingSetSDF`
 ~~~
 >>> predictions = lrModel.transform(testingSetSDF).select("id","price","Predicted_price")
 ~~~
-{: .bash}
+{: .python}
 Next we create an evaluator for our regression model and calculate the rms error
 ~~~
 >>> from pyspark.ml.evaluation import RegressionEvaluator
@@ -375,7 +377,7 @@ Next we create an evaluator for our regression model and calculate the rms error
 >>> rmse = regEval.evaluate(predictions)
 >>> print(rmse)
 ~~~
-{: .bash}
+{: .python}
 ~~~
 238581.1949454162
 ~~~
@@ -384,7 +386,7 @@ which represents a "characteristic" error of our model. In this case it is quite
 ~~~
 >>> testingSetSDF.describe(["price"]).show()
 ~~~
-{: .bash}
+{: .python}
 ~~~
 +-------+------------------+
 |summary|             price|
