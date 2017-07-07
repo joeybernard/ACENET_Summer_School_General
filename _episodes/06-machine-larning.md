@@ -1,7 +1,7 @@
 ---
 title: "Machine Learning with Spark"
 teaching: 30
-exercises: 30
+exercises: 60
 questions:
 - "How to get started using Spark?"
 - "How can I model data with Spark's MLlib?"
@@ -33,11 +33,23 @@ In this episode we will use housing sales data from Seattle Washington to explor
 Lets get started. First, connect to an ACENET cluster
 
 ~~~
-$ ssh glooscap.ace-net.ca
+$ ssh -X glooscap.ace-net.ca
 ~~~
 {: .bash}
 
-and then create a folder to work in
+The `-X` enables X11 forwarding, we will be using that to display plots we make in X11 windows. In some cases you may need to use `-Y` option if the `-X` option doesn't work. Test that your X11 forwarding is working by running a small graphical application on the remote computer.
+
+~~~
+$ xclock
+~~~
+
+you should see a window like that shown below open on your laptop.
+
+![xclock window](../fig/machine_learning/xclock-window.png)
+
+If you do not see a window as shown above, check that you have an X11 server running and or try the `-Y` options when connecting via ssh to the server. Once you have an xclock window open, we can move on.
+
+Next on the server we just connected to, create a new folder to work in.
 
 ~~~
 $ mkdir ml_spark
