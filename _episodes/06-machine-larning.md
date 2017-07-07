@@ -310,12 +310,13 @@ DenseVector([278.7955])
 
 To visualize our new model, lets apply it to our small Dataframe `houseSDFSmall` which creates a new DataFrame `predictions` which has a column `predicted_price` generated from our model.
 ~~~
->>> predictions = lrModel.transform(houseSDFSmall)
+>>> predictionsSDF = lrModel.transform(houseSDFSmall)
 ~~~
 {: .python}
 Next convert it to a Pandas DataFrame so we can plot it, as before
 ~~~
->>> predictionsPDF = predictions.toPandas()
+>>> predictionsPDF = predictionsSDF.toPandas()
+>>> predictionsPDF = predictionsSDF.toPandas()
 ~~~
 {: .python}
 This time however we want to plot two separate sets of data, the `price` and the `predicted` price. In this case instead of using the `plot` function on the Pandas DataFrame we are calling the `matplotlib` plot function directly, which is easier to customize
@@ -362,13 +363,13 @@ Finally create a legend to remind us which symbols are `price` and `predicted_pr
 > > {: .python}
 > > Then apply the new model
 > > ~~~
-> > >>> predictionsGR=lrModelGR.transform(houseSDFSmall)
+> > >>> predictionsGRSDF=lrModelGR.transform(houseSDFSmall)
 > > ~~~
 > > {: .python}
 > >
 > > then convert the new predictions to a Pandas DataFrame and plot the new predictions to see how it changed
 > > ~~~
-> > >>> predictionsGRPDF=predictionsGR.toPandas()
+> > >>> predictionsGRPDF=predictionsGRSDF.toPandas()
 > > >>> plt.plot(predictionsGRPDF["sqft_living"],predictionsGRPDF["price"],"ro")
 > > >>> plt.plot(predictionsGRPDF["sqft_living"],predictionsGRPDF["predicted_price"],"bo")
 > > >>> plt.xlabel("sqft_living")
@@ -384,7 +385,7 @@ Finally create a legend to remind us which symbols are `price` and `predicted_pr
 ## Assessing the model
 Now that we have a model and visualized it we will want to be able to discriminate quantitatively between different models. One of the simplest ways to measure the quality of a model is the root mean square error between the model and observations. For this we will use the `testingSetSDF` created previously. Thus far all our work has been with `trainingSetSDF` used to create our model. The first step in assessing our model is to create some predictions based on `testingSetSDF`
 ~~~
->>> predictions = lrModel.transform(testingSetSDF)
+>>> predictionsSDF = lrModel.transform(testingSetSDF)
 ~~~
 {: .python}
 Next we create an evaluator for our regression model. We indicate we want the root mean squared error ("rmse") as our metric and use it to compare the "predicted_price" and "price" columns in our DataFrame.
@@ -396,7 +397,7 @@ Next we create an evaluator for our regression model. We indicate we want the ro
 
 Then we can evaluate our predictions and print out the root mean squared error
 ~~~
->>> rmse = regEval.evaluate(predictions)
+>>> rmse = regEval.evaluate(predictionsSDF)
 >>> print(rmse)
 ~~~
 {: .python}
