@@ -316,7 +316,6 @@ To visualize our new model, lets apply it to our small Dataframe `houseSDFSmall`
 Next convert it to a Pandas DataFrame so we can plot it, as before
 ~~~
 >>> predictionsPDF = predictionsSDF.toPandas()
->>> predictionsPDF = predictionsSDF.toPandas()
 ~~~
 {: .python}
 This time however we want to plot two separate sets of data, the `price` and the `predicted` price. In this case instead of using the `plot` function on the Pandas DataFrame we are calling the `matplotlib` plot function directly, which is easier to customize
