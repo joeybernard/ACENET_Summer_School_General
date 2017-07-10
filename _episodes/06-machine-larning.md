@@ -139,6 +139,8 @@ SparkSession available as 'spark'.
 
 we are now in the python spark shell. The `>>>` is a prompt for us to enter python code lines in the python spark shell. We will use a `>>>` to denote commands run in the pyspark shell.
 
+There is on line **documentation** for [using Apache Spark](https://spark.apache.org/docs/2.1.0/quick-start.html) and for [working with MLlib](https://spark.apache.org/docs/2.1.0/ml-guide.html), the machine learning library for spark.
+
 > ## Running a script
 > We are working in the pyspark shell for this episode as it works well for quickly trying things out. However it is often nicer to work with python scripts to avoid re-type many lines when mistakes are made and as a way to save the work you have done for reuse and future reference. You can run python scripts you write with spark using the `spark-submit` command passing it the path and name of your python script.
 {: .callout}
