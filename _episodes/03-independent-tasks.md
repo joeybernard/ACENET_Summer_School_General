@@ -29,6 +29,16 @@ objectives:
 - SLURM: https://slurm.schedmd.com/job_array.html
 - SGE: http://wiki.gridengine.info/wiki/index.php/Simple-Job-Array-Howto
 
+An example for the Slurm scheduler:
+
+~~~ {.shell}
+#SBATCH --time=0-00:01:00
+#SBATCH --array=10-100:10
+echo "This is task $SLURM_ARRAY_TASK_ID on $(hostname) at $(date)"
+~~~
+
+An example for the SGE scheduler:
+
 ~~~ {.shell}
 #$ -cwd
 #$ -j yes
