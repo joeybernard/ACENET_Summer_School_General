@@ -32,7 +32,7 @@ To help guide you through all the possibilities when working with Big Data tools
 ## Hadoop distributed file system
 
 A distributed file system is a file system in which the data is distributed across a network. These file systems are often also referred to as network file systems. Often these distributed file systems attempt to make the distributed nature of the file system invisible to users so they need not worry about how the data is distributed. There are a variety of distributed file systems available.
-* [Luster](https://en.wikipedia.org/wiki/Lustre_(file_system)) is used on many HPC clusters for directories which should be available to all nodes on the cluster (e.g. user home directories)
+* [Lustre](https://en.wikipedia.org/wiki/Lustre_(file_system)) is used on many HPC clusters for directories which should be available to all nodes on the cluster (e.g. user home directories)
 * [Ceph](https://en.wikipedia.org/wiki/Ceph_(software)) is used on the Compute Canada cloud for virtual disks (volumes) and images.
 * **[HDFS](https://en.wikipedia.org/wiki/Apache_Hadoop#Hadoop_distributed_file_system)**  (Hadoop Distributed File System) is used in Big Data environments
 
