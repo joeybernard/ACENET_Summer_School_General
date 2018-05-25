@@ -87,11 +87,11 @@ version of `fire_serial`.
 
 ### Regular invocation:
 
-For the demonstration we are using the [Fortran 90 version]({{ site.url }}/code/profiling/md_gprof.f90).
+For the demonstration we are using the [Fortran 90 version](../code/profiling/md_gprof.f90).
 
 ```console
 # Download the source code file:
-$ wget {{ site.url }}/code/profiling/md_gprof.f90
+$ wget https://acenet-arc.github.io/ACENET_Summer_School_General/code/profiling/md_gprof.f90
 
 # Compile with gfortran:
 $ gfortran md_gprof.f90  -o md_gprof
@@ -275,4 +275,4 @@ $ gprof ./md_gprof  | gprof2dot -n0 -e0 | dot -Tpng -o md_gprof_graph.png
 $ display output.png
 ```
 
-![Call Graph]({{ site.url }}/fig/profiling/md_gprof_graph.png)
+![Call Graph](../fig/profiling/md_gprof_graph.png)
