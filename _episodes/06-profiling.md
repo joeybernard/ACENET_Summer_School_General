@@ -1,7 +1,7 @@
 ---
 title: "Analyzing Performance using a Profiler"
 teaching: 30
-exercises: 10
+exercises: 15
 questions:
 - How do I identify the computationally expensive parts of my code?
 objectives:
@@ -31,59 +31,56 @@ the total runtime.  It is easy to misjudge the runtime behavior of a program.
 > by each function.
 {: .callout}
 
-We will analyze an example program, which simulates the spread of a forest 
-fire, with the GNU profiler [Gprof](http://sourceware.org/binutils/docs/gprof/).
+We will analyze an example program, for simple Molecular Dynamics (MD)
+simulations, with the GNU profiler [Gprof](http://sourceware.org/binutils/docs/gprof/).
 There are different profilers for many different languages available and some
 of them can display the results graphically. Many Integrated Development 
 Environments (IDEs) also include a profiler. A wide selection of profilers is 
 [listed on Wikipedia](https://en.wikipedia.org/wiki/List_of_performance_analysis_tools).
 
 ## Molecular Dynamics Simulation
-<!-- 
-## Forest Fire Simulation
 
-The example program performs a probabilistic simulation of a forest fire.
-The program is available as [C][fire_serial_c], [C++][fire_serial_cpp],
-[FORTRAN77][fire_serial_f77], [Fortran 90][fire_serial_f90] and [Python][fire_serial_py]
-version from [John Burkhardt's website][jburkardt] released under the GNU LGPL license.
+The example program performs simple Molecular Dynamics (MD) simulations
+of particles interacting with a simple harmonic potential of the form:
 
-[fire_serial_c]:   http://people.sc.fsu.edu/~jburkardt/c_src/fire_serial/fire_serial.html
-[fire_serial_cpp]: http://people.sc.fsu.edu/~jburkardt/cpp_src/fire_serial/fire_serial.html
-[fire_serial_f77]: http://people.sc.fsu.edu/~jburkardt/f77_src/fire_serial/fire_serial.html
-[fire_serial_f90]: http://people.sc.fsu.edu/~jburkardt/f_src/fire_serial/fire_serial.html
-[fire_serial_py]:  http://people.sc.fsu.edu/~jburkardt/py_src/fire_serial/fire_serial.html
+```
+v(x) = ( sin ( min ( x, PI/2 ) ) )^2
+```
+
+It is a modified version of an MD example written in [Fortran 90][md_f90]
+by [John Burkardt][jburkardt] and released under the GNU LGPL license.
+
+Every time step, the MD algorithm essentially calculates the distance, 
+potential energy and force for each pair of particles as well as the kinetic 
+energy for the system.  Then it updates the velocities based on the acting 
+forces and updates the coordinates of the particles based on their velocities.
+
+[md_f90]: http://people.sc.fsu.edu/~jburkardt/f_src/md/md.html
 [jburkardt]: http://people.sc.fsu.edu/~jburkardt
 
-The program creates a square forest of 20x20 trees and randomly ignites a
-single tree.  In each simulation step a burning tree progresses one step from
-*SMOLDERING* to *BURNING* to *BURNT*. Also each tree in the *BURNING* state
-has a 50% chance to ignite each *UNBURNT* tree to the North, East, South and
-West.  The simulation stops once no trees in the *SMOLDERING* or *BURNING*
-state are left. 
--->
 
 ### Functions in `md_gprof.f90`
-* ...
 
-<!-- 
-### Functions in `fire_serial.f90`
+The MD code `md_gprof.f90` has been modified from [John Burkardt's version][md_f90]
+by splitting out the computation of the distance, force, potential- and 
+kinetic energies into separate functions, to make for a more interesting
+and instructive example to analyze with a profiler.
 
-* **MAIN** is the main program for FIRE_SERIAL.
-* **FIRE_SPREADS** determines whether the fire spreads.
-* **FOREST_BURNS** models a single time step of the burning forest.
-* **FOREST_INITIALIZE** initializes the forest values.
-* **FOREST_IS_BURNING** reports whether any trees in the forest are burning.
-* **FOREST_PRINT** prints the state of the trees in the forest.
-* **GET_PERCENT_BURNED** computes the percentage of the forest that burned.
-* **GET_SEED** returns a seed for the random number generator.
-* **I4_UNIFORM_AB** returns a scaled pseudorandom I4 between A and B.
-* **R8_UNIFORM_01** returns a unit pseudorandom R8.
-* **TIMESTAMP** prints the current YMDHMS date as a time stamp.
-* **TREE_IGNITE** sets a given tree to the SMOLDERING state.
+| Name of Subroutine    | Description                                       |
+| :-------------------- | :------------------------------------------------ |
+| **MAIN**              | is the main program for MD.                       |
+| **INITIALIZE**        | initializes the positions, velocities, and accelerations. |
+| **COMPUTE**           | computes the forces and energies.                 |
+| **CALC_DISTANCE**     | computes the distance of a pair of particles.     |
+| **CALC_POT**          | computes the potential energy for a pair of particles. |
+| **CALC_FORCE**        | computes the force for a pair of particles.       |
+| **CALC_KIN**          | computes the kinetic energy for the system.       |
+| **UPDATE**            | updates positions, velocities and accelerations.  |
+| **R8MAT_UNIFORM_AB**  | returns a scaled pseudorandom R8MAT.              |
+| **S_TO_I4**           | reads an integer value from a string.             |
+| **S_TO_R8**           | reads an R8 value from a string.                  |
+| **TIMESTAMP**         | prints the current YMDHMS date as a time stamp.   |
 
-This list was taken from the web-page for the [Fortran 90][fire_serial_f90]
-version of `fire_serial`.
- -->
 
 ### Regular invocation:
 
@@ -146,7 +143,10 @@ MD:
 
 ### Compiling with enabled profiling
 
-
+To enable profiling with the compilers of the GNU Compiler Collection, we 
+just need to add the `-pg` option to the `gfortran`, `gcc` or `g++` command.
+When running the resulting executable, the profiling data will be stored
+in the file `gmon.out`.
 
 ```console
 # Compile with GFortran with -pg option:

@@ -15,6 +15,7 @@ keypoints:
 - "A **DataFrame** is a container for working with collimated data."
 - "A **Pipeline** can be used to combine tasks into one."
 - "A **RegressionEvaluator** can be used to evaluate regression models."
+published: false
 ---
 > ## Prerequisites
 > There is very strong requirements on:
@@ -428,5 +429,3 @@ we see that it is about half the average house price. Would you want to buy a ho
 > ## Can you get a better linear model?
 > Try various combinations of features to see what the lowest value for rmse you can get.
 {: .challenge}
-
-

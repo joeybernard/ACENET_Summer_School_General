@@ -14,6 +14,7 @@ keypoints:
 - "Hadoop YARN is a job scheduler to work with HDFS which is data aware."
 - "Hadoop MapReduce is a programing framework which works with HDFS and YARN."
 - "Spark allows in-memory processing of data and complements HDFS."
+published: false
 ---
 
 What is meant by "Big" in "Big Data"? The "Big" in "Big Data" usually is indicated by a varying number of "V" words.
