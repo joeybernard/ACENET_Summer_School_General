@@ -344,7 +344,12 @@ $ display md_gprof_graph.png
 #### gprof2dot options
 
 By default `gprof2dot` won't display nodes and edges below a certain threshold.
+Because our example has only a small number of subroutines/functions, we
+have used the `-n` and `-e` options to set both thresholds to 0%.
 
+Gprof2dot has several more options to, e.g. limit the depth of the tree,
+show only the descendants of a function or only the ancestors of another.
+Different coloring schemes are available as well.
 
 ```
 $ gprof2dot --help
