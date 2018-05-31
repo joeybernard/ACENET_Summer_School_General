@@ -201,7 +201,7 @@ described in text-books, journal publications and technical manuals.
 
 ### Spatial- (or Domain-) Decomposition
 
-When simulating large numbers of particles (~ 10<sup>5</sup)) and across many nodes, 
+When simulating large numbers of particles (~ 10<sup>5</sup>)) and across many nodes, 
 communicating the updated coordinates, forces, etc. every timestep can 
 become a bottle-neck when using this Force- (or Particle-) Decomposition 
 scheme, where particles are assigned to fixed processors as above.
@@ -226,11 +226,16 @@ longest cut-off.
 
 ### MD Literature:
 
-1. Larsson P, Hess B, Lindahl E.; Algorithm improvements for molecular dynamics simulations.<br>
-   Wiley Interdisciplinary Reviews: Computational Molecular Science 2011;1: 93–108.<br>
-   [doi:10.1002/wcms.3](http://dx.doi.org/10.1002/wcms.3)
-2. Allen MP, Tildesley DJ; Computer Simulation of Liquids. Second Edition. Oxford University Press; 2017. 
-3. Frenkel D, Smit B; Understanding Molecular Simulation: From Algorithms to Applications. 2nd Edition. Academic Press; 2001. 
+1. Larsson P, Hess B, Lindahl E.; 
+   Algorithm improvements for molecular dynamics simulations.<br>
+   Wiley Interdisciplinary Reviews: Computational Molecular Science 2011;
+   1: 93–108.   [doi:10.1002/wcms.3](http://dx.doi.org/10.1002/wcms.3)
+2. Allen MP, Tildesley DJ;
+   Computer Simulation of Liquids. Second Edition. 
+   Oxford University Press; 2017. 
+3. Frenkel D, Smit B; 
+   Understanding Molecular Simulation: From Algorithms to Applications. 
+   2nd Edition. Academic Press; 2001. 
 
 
 ## Load Distribution
