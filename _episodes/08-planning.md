@@ -201,21 +201,62 @@ described in text-books, journal publications and technical manuals.
 
 ### Spatial- (or Domain-) Decomposition
 
-When simulating large numbers of particles (~ 10<sup>5) and across many nodes, 
+When simulating large numbers of particles (~ 10<sup>5</sup)) and across many nodes, 
 communicating the updated coordinates, forces, etc. every timestep can 
 become a bottle-neck when using this Force- (or Particle-) Decomposition 
 scheme, where particles are assigned to fixed processors as above.
 
 To reduce the amount of communication between processors and nodes, we can
-divide the simulation box along it's axes into smaller sub-boxes or domains.
-Each processor...
+partition the simulation box along it's axes into smaller domains.
+The particles are then assigned to the processors depending in which domain
+they are currently located.  This way many pair-interactions will be local
+within the same domain and therefore handled by the same processor.  For 
+pairs of particles that are not located in the same domain, we can use e.g.
+the "eighth shell" method in which a processor handles those pairs, in which 
+the second particle is located only in positive direction of the dimensions,
+as illustrated below.
 
 
+#### Domain Decomposition using Eight-Shell method
 ![eighth shell domain decomposition](../fig/planning/domain_decomposition.png)
 
+In this way each domain only needs to communicate with neighboring domains
+in one direction as long as none of the domain's dimension shorter than the
+longest cut-off.
+
+### MD Literature:
 
 1. Larsson P, Hess B, Lindahl E.; Algorithm improvements for molecular dynamics simulations.<br>
-   Wiley Interdisciplinary Reviews: Computational Molecular Science 2011;1: 93–108. <br>
+   Wiley Interdisciplinary Reviews: Computational Molecular Science 2011;1: 93–108.<br>
    [doi:10.1002/wcms.3](http://dx.doi.org/10.1002/wcms.3)
 2. Allen MP, Tildesley DJ; Computer Simulation of Liquids. Second Edition. Oxford University Press; 2017. 
 3. Frenkel D, Smit B; Understanding Molecular Simulation: From Algorithms to Applications. 2nd Edition. Academic Press; 2001. 
+
+
+## Load Distribution
+
+Generally speaking the goal is to distribute the work across the available
+resources (processors) as evenly as possible, as this will result in the 
+shortest amount of time and avoids some resources being left unused.
+
+An ideal load distribution might look like this:
+#### Ideal Load: all tasks have same size
+![Ideal Load](../fig/planning/ideal_load_distribution.png)
+
+Whereas if the tasks that are distributed have varying length, the program
+needs to wait for the slowest task to finish.  Such situations are even worse
+in cases where a parallel execution is followed by a synchronization step,
+before proceeding to the next iteration of a larger-scope loop (e.g. next 
+time-step, generation, random-sample).
+#### Unbalanced Load: size of tasks differs
+![Unbalanced Load](../fig/planning/unbalanced_load_distribution.png)
+
+
+#### Balanced Load: pairing long and short tasks
+![Balanced Load](../fig/planning/balanced_load.png)
+
+#### Larger Chunk-size evens out size of tasks
+![](../fig/planning/chunksize_3.png)
+
+#### Smaller Chunk-size can sometimes behave better
+![](../fig/planning/chunksize_2.png)
