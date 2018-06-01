@@ -8,7 +8,16 @@ objectives:
 - Take the MD algorithm from the profiling example and think about how 
   this could be implemented in parallel.
 keypoints:
-- 
+- Efficiently parallelizing a serial code needs some careful planning and 
+  comes with an overhead.
+- Shorter independent tasks need more overall communication.
+- Longer tasks can cause other resources being left unused.
+- Large variations of tasks-lengths can cause resources to be left unused,
+  especially if the length of a task cannot approximated upfront.
+- There are many textbooks and publications that describe different parallel
+  algorithms.  Try finding existing solutions for similar problems.
+- Domain Decomposition can be used in many cases to reduce communication by
+  processing short-range interactions locally.
 ---
 
 > ## Our Goals
@@ -224,6 +233,13 @@ In this way each domain only needs to communicate with neighboring domains
 in one direction as long as none of the domain's dimension shorter than the
 longest cut-off.
 
+
+> Domain Decomposition not only applies to Molecular Dynamics (MD) but also 
+> to Computational Fluid Dynamics (CFD), Finite Elements methods, Climate- 
+> &amp; Weather simulations and many more.
+{: .callout }
+
+
 ### MD Literature:
 
 1. Larsson P, Hess B, Lindahl E.; 
@@ -244,24 +260,63 @@ Generally speaking the goal is to distribute the work across the available
 resources (processors) as evenly as possible, as this will result in the 
 shortest amount of time and avoids some resources being left unused.
 
-An ideal load distribution might look like this:
 #### Ideal Load: all tasks have same size
+An ideal load distribution might look like this:
+
 ![Ideal Load](../fig/planning/ideal_load_distribution.png)
 
+---
+
+#### Unbalanced Load: size of tasks differs
 Whereas if the tasks that are distributed have varying length, the program
 needs to wait for the slowest task to finish.  Such situations are even worse
 in cases where a parallel execution is followed by a synchronization step,
 before proceeding to the next iteration of a larger-scope loop (e.g. next 
-time-step, generation, random-sample).
-#### Unbalanced Load: size of tasks differs
+time-step, generation).
+
 ![Unbalanced Load](../fig/planning/unbalanced_load_distribution.png)
 
+---
 
 #### Balanced Load: pairing long and short tasks
+In cases where the length of independent tasks can reasonably well be
+estimated, tasks of different lengths can be combined to "chunks" of similar
+length.
+
 ![Balanced Load](../fig/planning/balanced_load.png)
 
+---
+
 #### Larger Chunk-size evens out size of tasks
-![](../fig/planning/chunksize_3.png)
+Chunks consisting of many tasks (large chunk-size) can result relatively 
+consistent lengths of the chunks, even if the lengths of the tasks are not
+pre-determined and have large variations.  However this can lead to 
+situations, where a large fraction of the processors is left unused, when
+by chance a chunk consists of many very long tasks, or as in the figure
+below, the number of chunks is sightly larger than the closest multiple of 
+the processors.
+
+![large chunk size](../fig/planning/chunksize_3.png)
+
+---
 
 #### Smaller Chunk-size can sometimes behave better
-![](../fig/planning/chunksize_2.png)
+Smaller chunk-sizes (and therefore more chunks) are better in avoiding
+waste of resources during the last step, however are inferior in averaging
+out the different lengths of tasks.
+
+![small chunk size](../fig/planning/chunksize_2.png)
+
+### Task-queues
+
+Creating a queue (list) of independent tasks which are processed asynchronously 
+can improve the utilization of resources especially if the tasks are sorted
+from the longest to the shortest.
+
+However special care needs to be taken to avoid race-conditions, where two 
+processes take the same task from the stack.  Having a dedicated manager-
+process to assign the work to the compute processes introduces overhead
+and can become a bottle-neck when very large number of compute processes are
+involved.
+
+This also increases the amount of communication needed.

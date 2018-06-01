@@ -3,4 +3,9 @@ layout: page
 title: Setup
 permalink: /setup/
 ---
-FIXME
+
+## Required Software:
+
+* `gfortran`
+* `gprof`
+* `python` & `pip`
