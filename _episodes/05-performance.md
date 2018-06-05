@@ -25,7 +25,7 @@ Human beings are notoriously bad at trying to figure out where a program is spen
 
 Most programming languages, such as C/C++, Java, Python, R, all have associated profiling utilities. They all specialize in particular areas, so you will need to do a bit of research to find the most appropriate tool. For writing C/C++ programs, time profiling can be measured using gprof. Gprof is a statistical profiler, which means that it samples your program as it runs to build up statistics. If you want to profile memory usage, a very popular tool is valgrind, which can track all of the memory usage and find issues such as memory leaks.
 
-Let's say that you now have a single-threaded program that has had as much performance as possible squeezed out of it, but that is still not enough. What is the next step? This is where you need to consider ping your code. This brings to mind a second famous quote, this one by Brian Kernighan.
+Let's say that you now have a single-threaded program that has had as much performance as possible squeezed out of it, but that is still not enough. What is the next step? This is where you need to consider profiling your code. This brings to mind a second famous quote, this one by Brian Kernighan.
 
 > ## Debugging
 > Everyone knows that debugging is twice as hard as writing a program in the first place. So if you're as clever as you can be when you write it, how will you ever debug it?
@@ -33,7 +33,7 @@ Let's say that you now have a single-threaded program that has had as much perfo
 
 This maxim goes doubly so for parallel programs. The rule of thumb is to move slowly and carefully, with as much forethought as possible. Trying to debug issues after that fact is very difficult, so try your absolute best to avoid them in the first place.
 
-So, how do you measure your newly parallelized codes performance? The vast majority of people are most concerned with time performance, so that will be our focus here, as well. You should see the time taken for your code decreasing with each additional CPU that you can add to the problem. The exact amount of time decrease is called the speedup ratio, given by
+So, how do you measure your newly parallelized code's performance? The vast majority of people are most concerned with time performance, so that will be our focus here, as well. You should see the time taken for your code decreasing with each additional CPU that you can add to the problem. The exact amount of time decrease is called the speedup ratio, given by
 
 ~~~
 speedup = sequential_time / parallel_time
@@ -61,6 +61,6 @@ max speedup <= (f + (1-f)/p)^-1
 ~~~
 {: .source}
 
-where 'f' is the percentage of your code that must be sequential, and 'p' is the number of processors being used. Looking at this equation, if we let 'p'go off to infinity, we get the absolute maximum possible for your code as 1/f. So, if half of your code needs to run sequentially, the absolute largest sppedup you will ever get is a factor of 2.
+where 'f' is the percentage of your code that must be sequential, and 'p' is the number of processors being used. Looking at this equation, if we let 'p' go off to infinity, we get the absolute maximum possible for your code as 1/f. So, if half of your code needs to run sequentially, the absolute largest speedup you will ever get is a factor of 2.
 
 These are just thoughts to keep in mind as we progress through the rest of the summer school.
