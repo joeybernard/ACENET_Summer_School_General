@@ -1,6 +1,6 @@
 ---
 title: "Performance and its measurement"
-teaching: 25
+teaching: 15
 exercises: 0
 questions:
 - "What affects performance?"

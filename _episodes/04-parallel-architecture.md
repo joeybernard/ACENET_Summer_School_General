@@ -1,6 +1,6 @@
 ---
 title: "Parallel Architecture"
-teaching: 15
+teaching: 10
 exercises: 0
 questions:
 - What are the different layouts of parallel computers?

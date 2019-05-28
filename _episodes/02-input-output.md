@@ -1,7 +1,7 @@
 ---
 title: "Input and Output"
-teaching: 12
-exercises: 3
+teaching: 15
+exercises: 5
 objectives:
 - Sketch the storage structure of a generic, typical cluster
 - Understand the terms "local disk", "IOPS", "SAN", "metadata", "parallel I/O"

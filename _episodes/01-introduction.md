@@ -1,7 +1,7 @@
 ---
 title: "Introduction"
-teaching: 10
-exercises: 0
+teaching: 5
+exercises: 10
 questions:
 - "What will we learn here?"
 - "What are the major themes in parallel computing?"
