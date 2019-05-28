@@ -29,20 +29,19 @@ objectives:
 - SLURM: [Job Arrays](https://docs.computecanada.ca/wiki/Job_arrays) 
 
 
-An example for the Slurm scheduler:
+An example of a submission script for an array job with the slurm schedular. 
 
 ~~~ {.shell}
-#SBATCH --time=0-00:01:00
+#!/bin/bash
+#SBATCH --account=YOUR_ACCOUNT
 #SBATCH --array=10-100:10
+#SBATCH --time=0-00:01:00
+
 echo "This is task $SLURM_ARRAY_TASK_ID on $(hostname) at $(date)"
 ~~~
 
-An example for the SGE scheduler:
-
+If the above is saved into a script called `array_job_submit.sh` and `YOUR_ACCOUNT` with your CC account it can be submitted to the SLURM schedular with:
 ~~~ {.shell}
-#$ -cwd
-#$ -j yes
-#$ -l h_rt=0:1:0
-#$ -t 10-100:10
-echo "This is task $SGE_TASK_ID on $(hostname) at $(date)"
+$ sbatch array_job_submit.sh
 ~~~
+
