@@ -13,7 +13,7 @@ keypoints:
 - "Early optimization is the source of all evil"
 ---
 
-One of the key reasons for learning to write parallel programs is to getting better performance for your particular problem. But, how best can you apply these new skills? There is a very famous quote from Donald Knuth:
+One of the key reasons for learning to write parallel programs is to get better performance for your particular problem. But, how best can you apply these new skills? There is a very famous quote from Donald Knuth:
 
 > ## Evil
 > The real problem is that programmers have spent far too much time worrying about efficiency in the wrong places and at the wrong times; premature optimization is the root of all evil (or at least most of it) in programming.
