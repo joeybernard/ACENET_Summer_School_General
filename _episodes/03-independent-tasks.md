@@ -23,11 +23,11 @@ objectives:
 {: .challenge}
 
 - Don't need fancy parallel programming interfaces to handle these problems.
-- Can use a simple task scheduler like https://www.gnu.org/software/parallel/
+- Can use a simple task scheduler like [GNU Parallel](https://docs.computecanada.ca/wiki/GNU_Parallel)
 - or dynamic resource managers like PBS, Torque, SLURM, SGE, *etc.*
 - Most DRMs support "job arrays" or "task arrays" or "array jobs".
-- SLURM: https://slurm.schedmd.com/job_array.html
-- SGE: http://wiki.gridengine.info/wiki/index.php/Simple-Job-Array-Howto
+- SLURM: [Job Arrays](https://docs.computecanada.ca/wiki/Job_arrays) 
+
 
 An example for the Slurm scheduler:
 
