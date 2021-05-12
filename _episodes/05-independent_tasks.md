@@ -1,16 +1,18 @@
 ---
-title: "Independent tasks and job schedulers"
+title: "Independent Tasks and Job Schedulers"
 teaching: 5
 exercises: 5
+questions:
+- How to run several independent jobs in parallel?
 objectives:
 - Be able to identify a problem of independent tasks
-- Use a scheduler like SGE or SLURM to submit an array job 
+- Use a scheduler like SLURM to submit an array job
 ---
 
 - Some problems are easy to parallelize
 - as long as the sub-problems don't need information from each other,
 - e.g. counting blobs in 10,000 image files.
-- Other tests: Do the sub-tasks have to be done at the same time, 
+- Other tests: Do the sub-tasks have to be done at the same time,
  or in order? Or could they all start and end at random times?
 - Computer scientists sometimes call these "embarrassingly parallel" problems.
 - We call them "perfectly parallel". They're extremely efficient.
@@ -26,22 +28,21 @@ objectives:
 - Can use a simple task scheduler like [GNU Parallel](https://docs.computecanada.ca/wiki/GNU_Parallel)
 - or dynamic resource managers like PBS, Torque, SLURM, SGE, *etc.*
 - Most DRMs support "job arrays" or "task arrays" or "array jobs".
-- SLURM: [Job Arrays](https://docs.computecanada.ca/wiki/Job_arrays) 
+- SLURM: [Job Arrays](https://docs.computecanada.ca/wiki/Job_arrays)
 
 
-An example of a submission script for an array job with the slurm schedular. 
+An example of a submission script for an array job with the SLURM scheduler.
 
 ~~~ {.shell}
 #!/bin/bash
-#SBATCH --account=YOUR_ACCOUNT
-#SBATCH --array=10-100:10
+#SBATCH --account=sponsor0
+#SBATCH --array=1-100
 #SBATCH --time=0-00:01:00
 
 echo "This is task $SLURM_ARRAY_TASK_ID on $(hostname) at $(date)"
 ~~~
 
-If the above is saved into a script called `array_job_submit.sh` and `YOUR_ACCOUNT` with your CC account it can be submitted to the SLURM schedular with:
+If the above is saved into a script called `array_job_submit.sh` and `sponsor0` with your sponsor's CC account it can be submitted to the SLURM schedular with:
 ~~~ {.shell}
 $ sbatch array_job_submit.sh
 ~~~
-

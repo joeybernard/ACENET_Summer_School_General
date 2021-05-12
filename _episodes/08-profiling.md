@@ -1,16 +1,15 @@
 ---
-title: "Analyzing Performance using a Profiler"
+title: "Analyzing Performance Using a Profiler"
 teaching: 30
 exercises: 20
 questions:
 - How do I identify the computationally expensive parts of my code?
 objectives:
-- Using a profiler too analyze the runtime-behavior of a program.
-- Identifying areas of the code with a potential for optimization and/or
+- Using a profiler to analyze the runtime behaviour of a program.
+- Identifying areas of the code with potential for optimization and/or
   parallelization.
 keypoints:
-- Don't start to parallelize or optimize your code without having used
-  a profiler first.
+- Don't start to parallelize or optimize your code without having used a profiler first.
 - A programmer can easily spend many hours of work "optimizing" a part
   of the code which eventually speeds up the program by only a minuscule
   amount.
@@ -23,19 +22,17 @@ keypoints:
 
 Programmers often tend to over-think design and might spend a lot of their
 time optimizing parts of the code that only contributes a small amount to
-the total runtime.  It is easy to misjudge the runtime behavior of a program.
+the total runtime.  It is easy to misjudge the runtime behaviour of a program.
 
-> In order to make an informed decision what parts of the code to optimize,
-> one can use a performance analysis tool, or short "*profiler*", to analyze 
-> the runtime behavior of a program and measure how much CPU-time is used 
-> by each function.
+> ## What parts of the code to optimize?
+> To make an informed decision what parts of the code to optimize, one can use a performance analysis tool, or short "*profiler*", to analyze the runtime behaviour of a program and measure how much CPU-time is used by each function.
 {: .callout}
 
 We will analyze an example program, for simple Molecular Dynamics (MD)
 simulations, with the GNU profiler [Gprof](http://sourceware.org/binutils/docs/gprof/).
 There are different profilers for many different languages available and some
-of them can display the results graphically. Many Integrated Development 
-Environments (IDEs) also include a profiler. A wide selection of profilers is 
+of them can display the results graphically. Many Integrated Development
+Environments (IDEs) also include a profiler. A wide selection of profilers is
 [listed on Wikipedia](https://en.wikipedia.org/wiki/List_of_performance_analysis_tools).
 
 ## Molecular Dynamics Simulation
@@ -43,16 +40,15 @@ Environments (IDEs) also include a profiler. A wide selection of profilers is
 The example program performs simple Molecular Dynamics (MD) simulations
 of particles interacting with a simple harmonic potential of the form:
 
-```
-v(x) = ( sin ( min ( x, PI/2 ) ) )^2
-```
+
+$$v(x) = ( sin ( min ( x, PI/2 ) ) )^2$$
 
 It is a modified version of an MD example written in [Fortran 90][md_f90]
 by [John Burkardt][jburkardt] and released under the GNU LGPL license.
 
-Every time step, the MD algorithm essentially calculates the distance, 
-potential energy and force for each pair of particles as well as the kinetic 
-energy for the system.  Then it updates the velocities based on the acting 
+Every time step, the MD algorithm essentially calculates the distance,
+potential energy and force for each pair of particles as well as the kinetic
+energy for the system.  Then it updates the velocities based on the acting
 forces and updates the coordinates of the particles based on their velocities.
 
 [md_f90]: http://people.sc.fsu.edu/~jburkardt/f_src/md/md.html
@@ -62,7 +58,7 @@ forces and updates the coordinates of the particles based on their velocities.
 ### Functions in `md_gprof.f90`
 
 The MD code `md_gprof.f90` has been modified from [John Burkardt's version][md_f90]
-by splitting out the computation of the distance, force, potential- and 
+by splitting out the computation of the distance, force, potential- and
 kinetic energies into separate functions, to make for a more interesting
 and instructive example to analyze with a profiler.
 
@@ -101,24 +97,24 @@ $ ./md_gprof 2 200 500 0.1
 
 ```
 25 May 2018   4:45:23.786 PM
- 
+
 MD
   FORTRAN90 version
   A molecular dynamics program.
- 
+
   ND, the spatial dimension, is        2
   NP, the number of particles in the simulation is      200
   STEP_NUM, the number of time steps, is      500
   DT, the size of each time step, is   0.100000    
- 
+
   At each step, we report the potential and kinetic energies.
-  The sum of these energies should be a constant.
+  The sum of these energies should be constant.
   As an accuracy check, we also print the relative error
   in the total energy.
- 
+
       Step      Potential       Kinetic        (P+K-E0)/E0
                 Energy P        Energy K       Relative Energy Error
- 
+
          0     19461.9         0.00000         0.00000    
         50     19823.8         1010.33        0.705112E-01
        100     19881.0         1013.88        0.736325E-01
@@ -130,13 +126,13 @@ MD
        400     19900.0         1014.86        0.746569E-01
        450     19900.0         1014.86        0.746569E-01
        500     19900.0         1014.86        0.746569E-01
- 
+
   Elapsed cpu time for main computation:
      19.3320     seconds
- 
+
 MD:
   Normal end of execution.
- 
+
 25 May 2018   4:45:43.119 PM
 ```
 {: .output}
@@ -144,7 +140,7 @@ MD:
 
 ### Compiling with enabled profiling
 
-To enable profiling with the compilers of the GNU Compiler Collection, we 
+To enable profiling with the compilers of the GNU Compiler Collection, we
 just need to add the `-pg` option to the `gfortran`, `gcc` or `g++` command.
 When running the resulting executable, the profiling data will be stored
 in the file `gmon.out`.
@@ -203,8 +199,8 @@ Each sample counts as 0.01 seconds.
 | total s/call       | the average number of milliseconds spent in this function and its descendents per call, if this function is profiled, else blank. |
 | name               | the name of the function.  This is the minor sort for this listing. |
 
-In this example the most time is spent computing the forces and potential 
-energy.  Calculating the distance between the particles is at 3rd rank and 
+In this example, the most time is spent computing the forces and potential
+energy.  Calculating the distance between the particles is at 3rd rank and
 roughly 2x faster than either of the above.
 
 
@@ -275,7 +271,7 @@ index % time    self  children    called     name
 {: .output}
 
 Each entry in this table consists of several lines.  The line with the
-index number at the left hand margin lists the current function.
+index number at the left-hand margin lists the current function.
 The lines above it list the functions that called this function,
 and the lines below it list the functions this one called.
 
@@ -294,7 +290,7 @@ This line lists:
 
 #### Index by function name:
 ```
-Index by function name
+Index by the function name
 
    [2] MAIN__                  [5] calc_pot_               [9] s_to_i4_
    [6] calc_distance_          [1] compute_               [13] s_to_r8_
@@ -312,8 +308,8 @@ in Python: Gprof2Dot and GraphViz.
 
 #### Install GraphViz and Gprof2Dot
 
-First these two packages need to be  installed using pip. Using the `--user`
-option, will install them into the user's home directory under 
+First, these two packages need to be  installed using pip. Using the `--user`
+option, will install them into the user's home directory under
 `~/.local/lib/pythonX.Y/site-packages`.
 
 ```bash
@@ -328,9 +324,9 @@ the output of `gprof` into `gprof2dot` and it's output further into `dot`
 from the GraphViz package.  It can be saved in different formats, e.g. PNG
 (`-Tpng`) and under a user-defined filename (argument `-o`).
 
-If a local X-server is running and X-forwarding is enabled for the current 
+If a local X-server is running and X-forwarding is enabled for the current
 SSH session, we can use the `display` command from the ImageMagick tools
-to show the image. Otherwise we can download it and display it with a program
+to show the image. Otherwise, we can download it and display it with a program
 of our choice.
 
 ```bash
@@ -356,7 +352,7 @@ $ gprof2dot --help
 ```
 {: .bash}
 ```
-Usage: 
+Usage:
 	gprof2dot [options] [file] ...
 
 Options:
@@ -397,3 +393,5 @@ Options:
                         Filter all modules not in a specified path
 ```
 {: .output}
+
+{% include links.md %}
