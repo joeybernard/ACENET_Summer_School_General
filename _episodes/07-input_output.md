@@ -1,5 +1,6 @@
 ---
 title: "Input and Output"
+start: true
 teaching: 10
 exercises: 5
 questions:
