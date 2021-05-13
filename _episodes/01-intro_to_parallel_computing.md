@@ -37,19 +37,7 @@ Here are just a few examples of how parallel computing is helping to accelerate 
     - Nearly every major aspect of today’s banking, from credit scoring to risk modelling to fraud detection, is GPU-accelerated.
 5. Pharmaceutical design
     - Uses parallel computing for running simulations of molecular dynamics
-
-<figure class="video_container">
-  <video width="360" controls="true" autoplay loop style="display:block; margin:0 auto;" allowfullscreen="true">
-    <source src="../fig/calmodulin.mp4" type="video/mp4">
-  </video>
-</figure>
 6. Computational fluid dynamics, tidal wave simulations
-
-<figure class="video_container">
-  <video width="360" controls="true" autoplay loop style="display:block; margin:0 auto;" allowfullscreen="true">
-    <source src="../fig/Grand_Passage_curl_int4_PTSx2.mp4" type="video/mp4">
-  </video>
-</figure>
 
 ### Benefits of Parallel Computing:
  - It allows us to solve problems in a shorter time.
