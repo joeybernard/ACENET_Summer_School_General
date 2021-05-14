@@ -2,17 +2,17 @@
 layout: lesson
 root: .
 ---
-This segment gives a general introduction into parallel computing without
-going into specific implementations, which will be covered during the
-other days of the workshop.
+The first week's sessions give a general introduction to parallel computing.
+Specific implementations will be covered in subsequent weeks of the summer school.
 
 > ## Prerequisites
 >
-> In order to edit, compile and run the examples, you should have experience with:
+> In order to compile and run the examples this week you will use:
 >
-> * the bash command line interface
-> * the Fortran programming language
-> * the GNU GCC compiler suite
+> * the shell command line (bash)
+> * the GNU compiler suite (gcc, gfortran)
 >
-> A short refresher will be given in the introduction.
+> One exercise involves compiling and running C code, another involves compiling and
+> running Fortran code.  Familiarity with these languages will be helpful
+> but is not required.
 {: .prereq}
