@@ -144,5 +144,7 @@ usually "which memory model should we follow?"
   via messages, and this communication overhead can reduce efficiency to the
   point where scaling-up produces no benefit.
 
+You'll learn more about these two major models in the OpenMP programming
+and MPI programming segments of this Summer School.
 
 {% include links.md %}
