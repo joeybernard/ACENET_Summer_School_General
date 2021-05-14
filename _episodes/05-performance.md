@@ -1,57 +1,90 @@
 ---
-title: "Parallel Performance and Scalability"
+title: "Performance and Scalability"
 teaching: 30
 exercises: 30
 questions:
-- How to use parallel computers efficiently?
+- How do we measure parallel performance?
 objectives:
-- Understand limits to parallel speedup.
 - Learn how to measure parallel scaling.
+- Understand limits to parallel speedup.
 keypoints:
-- An increase of the number of processors leads to a decrease of efficiency.
-- The increase of problem size causes an increase in efficiency.
+- An increase of the number of processors usually leads to a decrease in efficiency.
+- The increase of problem size usually leads to an increase in efficiency.
 - The parallel problem can be solved efficiently by increasing the number of processors and the problem size simultaneously.
 ---
 
 #### Speedup
-The parallel speedup is defined straightforwardly as the ratio of the serial runtime of the best sequential algorithm to the time taken by the parallel algorithm to solve the same problem on $N$ processors:
+Parallel **speedup** is defined as the ratio of the serial runtime of the best
+sequential algorithm to the time taken by the parallel algorithm to solve the
+same problem on $N$ processors:
 
-$$ SpeedUP = \frac{T_s}{T_p}$$
+$$ Speedup = \frac{T_s}{T_p}$$
 
-Where $T_s$ is sequential runtime and $T_p$ is parallel runtime
+...where $T_s$ is sequential runtime and $T_p$ is parallel runtime.  Serial
+runtime is (usually!) longer than parallel runtime, so a larger speedup is
+better.
 
 Optimally, the speedup from parallelization would be linear. Doubling the number of processing elements should halve the runtime, and doubling it a second time should again halve the runtime.  That would mean that every processor would be contributing 100% of its computational power. However, very few parallel algorithms achieve optimal speedup. Most of them have a near-linear speedup for small numbers of processing elements, which flattens out into a constant value for large numbers of processing elements.
 
-Typically a program solving a large problem consists of the parallelizable and non-parallelizable parts and speedup depends on the fraction of parallelizable part of the problem.
+#### Efficiency
 
-#### Scalability
+**Efficiency** is the ratio between the actual speedup and the ideal speedup
+obtained when using a certain number of processors. We just argued that the
+ideal speedup is proportional to the number of processors, $N$, so:
 
-Scalability (also referred to as efficiency) is the ratio between the actual speedup and the ideal speedup obtained when using a certain number of processors. Considering that the ideal speedup of a serial program is proportional to the number of parallel processors:
+$$Efficiency=\frac{Speedup}{N}=\frac{T_s}{T_p*N}$$
 
-$$Efficiency=\frac{SpeedUP}{N}=\frac{T_s}{T_p*N}$$
-
-Efficiency can be also understood as the fraction of time for which a processor is usefully utilized.
+Efficiency can be also understood as the fraction of time for which the
+processors are doing useful work, or the fraction of the processors 
+which are doing useful work on average.
 
 - 0-100%
 - Depends on the number of processors
 - Varies with the size of the problem
 
-When we writing a parallel application we want processors to be utilized efficiently.
+When writing a parallel application we want processors to be used efficiently.
 
 #### Amdahl's law
-The dependence of the maximum speedup of an algorithm on the number of parallel processes is described by Amdahl's law.
 
-We can rewrite $T_s$ and $T_p$ in terms of parallel overhead cost $K$, the serial fraction of code $S$, the parallel fraction of code $P$ and the number of processes $N$:
+We can think of a program or algorithm as having *parallelizable* and
+*non-parallelizable* parts.  Parallelizable parts are those segments of the
+code that can execute on separate processors doing separate work.
+Non-parallelizable parts are those segments of the code which can only be done
+by one process, or equivalently, parts which do duplicate work if executed by
+more than one process.  
 
-$$T_s = S + P$$
+Reading in a parameter which every process must have, for example, is a
+non-parallelizable operation.  You can either have one process read, or you can
+have all processes read, but since all processes would be doing exactly the
+same work, no speed advantage would be gained by parallelizing the operation.
+Therefore input is a *non-parallelizable* part of most programs.
 
-$$T_p = S + \frac{P}{N} + K$$
+Amdahl's Law takes this division of code into parallelizable and non-parallelizable
+parts to describe the maximum speedup of an algorithm.
 
-Assuming that $K$ is negligibly small (very optimistic) and considering that $S+P=1$:
+Express the time to run the serial code as the sum of the time to run the
+parallelizable *fraction*, $P$, and the time to run the non-parallelizable
+*fraction*, $S$ (for serial):
 
-$$ SpeedUP = \frac{T_s}{T_p}=\frac{1}{S+\frac{P}{N}} $$
+$$T_s = T_s S + T_s P;    S+P=1$$
 
-This equation is known as Amdahl's law. It states that the speedup of a program from parallelization is limited by a fraction of a program that can be parallelized.
+The time to run the parallel code is reduced by the number of processors $N$,
+but only for the parallelizable part.  Furthermore, the parallel program may
+have to do certain operations that the serial code does not.  These operations
+might include, for example, setting up communications with other processes,
+or waiting for other processes to complete so that shared memory is consistent.
+We encapsulate these extra operations as *parallel overhead*, $K$:
+
+$$T_p = T_s S + T_s \frac{P}{N} + K$$
+
+If we make the extremely optimistic assumption that $K$ is negligibly small
+and substitute the above into the definition of speedup, we get:
+
+$$ Speedup = \frac{T_s}{T_p} = \frac{1}{S+\frac{P}{N}} $$
+
+This equation is known as **Amdahl's law**. It states that the speedup of a
+program from parallelization is limited by the fraction of the program that can
+be parallelized.
 
 For example, if 50% of the program can be parallelized, the maximum speedup using parallel computing would be 2 no matter how many processors are used.
 
@@ -60,27 +93,45 @@ For example, if 50% of the program can be parallelized, the maximum speedup usin
 | ![](../fig/Amdahl's_Law.svg)| ![](../fig/Amdahl_Efficiency.svg)|
 
 
-Amdahl's law highlights that no matter how fast we make the parallel part of the code, we will always be limited by the serial portion.
+Amdahl's law highlights that no matter how fast we make the parallel part of
+the code, we will always be limited by the serial portion.  Furthermore,
+if the parallel overhead $K$ is not actually small, that's even worse news.
+It is entirely possible for the run time of a parallel program to be *worse*
+than the run time of the equivalent serial program due to $K$.
 
-It implies that parallel computing is only useful when the number of processors is small, or when the problem is perfectly parallel, i.e., embarrassingly parallel. Amdahl's law is a major obstacle in boosting parallel performance.
+This suggests that parallel computing is only useful when the number of
+processors is small, or when the problem is perfectly parallel, i.e.,
+embarrassingly parallel. Amdahl's law is a major obstacle in boosting parallel
+performance.
 
-Amdahl's law assumes that the total amount of work is *independent of the number of processors* (fixed-size problem).
-
-This type of problem scaling is referred to as *Strong Scaling*.
+But notice that Amdahl's law assumes that the total amount of work is
+*independent of the number of processors*, that is, the problem is the same
+size no matter how many processors we use.  This type of scaling is referred to
+as *Strong Scaling*.
 
 ![](../fig/strong_scaling.svg)
 
 #### Gustafson's law
 
-In practice, users should increase the size of the problem as more processors are added. The run-time scaling for this scenario is called *Weak Scaling*.
+It is very common, however, that we have some control over the size of our
+problem, and we are using parallel computing to handle larger problems than we
+can in serial.  For example, we might be doing some simulation on a grid where
+we can choose how fine to make the grid.  Increasing the number of points on
+the grid increases (we hope) the precision of our results, but also requires
+more computing.
+
+This scenario is called *Weak Scaling*:
 
 ![](../fig/weak_scaling.svg)
 
-If we assume that the total amount of work to be done in parallel *varies linearly* with the number of processors, speedup will be given by the Gustafson's law:
+If we can arrange that the total amount of work to be done in parallel varies
+*linearly* with the number of processors, speedup will be given by **Gustafson's
+law**, shown here without derivation:
 
-$$\large{SpeedUp = N − S * (N − 1)}$$
+$$\large{Speedup = N − S * (N − 1)}$$
 
 where $N$ is the number of processors and $S$ is the serial fraction as before.
+(We also continue to assume that the parallel overhead $K$ is negligible.)
 
 | Speed Up| Efficiency |
 :---:|:---:
@@ -89,13 +140,29 @@ where $N$ is the number of processors and $S$ is the serial fraction as before.
 The theoretical speedup is more optimistic in this case. We can see that any sufficiently large problem can be solved in the same amount of time by using more processors. We can use larger systems with more processors to solve larger problems.
 
 #### Example problem with weak scaling.
-Imagine that you are working on a numeric weather forecast for some country. To predict the weather, you need to divide the whole area into many small cells and run the simulation. Let's imagine that you divided the whole area into 10,000 cells with a size of 50x50 km and simulation of one week forecast took 1 day on 1 CPU. You want to improve forecast accuracy to 10 km. In this case, you would have 25 times more cells. The volume of computations would increase proportionally and you would need 25 days to complete forecast. This is unacceptable and you increase the number of CPUs to 25 hoping to complete the job in 1 day.
+
+Imagine that you are working on a numeric weather forecast for some country. To
+predict the weather, you need to divide the whole area into many small cells
+and run the simulation. Let's imagine that you divided the whole area into
+10,000 cells with a size of 50x50 km and simulation of one week forecast took 1
+day on 1 CPU. You want to improve forecast accuracy to 10 km. In this case, you
+would have 25 times more cells. The volume of computations would increase
+proportionally and you would need 25 days to complete forecast. This is
+unacceptable and you increase the number of CPUs to 25 hoping to complete the
+job in 1 day. Gustafson's Law says you have some reasonable hope of it working.
+
 #### Example problem with strong scaling.
-Imagine that you want to analyze customer transactional data for 2019. You cannot add more transactions to your analysis because there was no more.
-This is fixed-size problem and it will follow strong scaling law.
 
-Any real-life problem falls in one of these 2 categories. Type of scaling is a property of a problem that cannot be changed, but we can change the number of processing elements so that we utilize them efficiently to solve a problem.
+Imagine that you want to analyze customer transactional data for 2019. You
+cannot add more transactions to your analysis because there was no more.  This
+is fixed-size problem and it will follow strong scaling (Amdahl's) law.
 
+Any real-life problem falls in one of these 2 categories, although it is not
+always practical to maintain a precise linear proportion between problem size
+and number of processors. The type of scaling is a property of a problem that
+cannot be changed, but understanding what kind of scaling to expect helps us
+make sensible choices about the number of processing elements so that
+we use them efficiently.
 
 
 > ## Measuring Parallel Scaling
@@ -140,8 +207,8 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
 
 1. Download and unpack the code:
     ~~~
-    wget https://github.com/ssvassiliev/Summer_School_General/raw/master/code/julia_set.tar.gz
-    tar -xf julia_set.tar.gz
+    wget https://acenet-arc.github.io/ACENET_Summer_School_General/code/julia_set.tar
+    tar -xf julia_set.tar
     ~~~
     {: .source}
 
@@ -171,7 +238,7 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
     {: .output}
 
     The program generates image file *julia_openmp.tga*:
-    ![julia_openmp.tga](../code/julia_openmp.png)
+    ![julia_openmp.tga](../fig/julia_openmp.png)
 
 
 3. To measure strong scaling submit array job: *sbatch submit_strong.sh*
