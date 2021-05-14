@@ -207,8 +207,8 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
 
 1. Download and unpack the code:
     ~~~
-    wget https://github.com/ssvassiliev/Summer_School_General/raw/master/code/julia_set.tar.gz
-    tar -xf julia_set.tar.gz
+    wget https://acenet-arc.github.io/ACENET_Summer_School_General/code/julia_set.tar
+    tar -xf julia_set.tar
     ~~~
     {: .source}
 
@@ -238,7 +238,7 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
     {: .output}
 
     The program generates image file *julia_openmp.tga*:
-    ![julia_openmp.tga](../code/julia_openmp.png)
+    ![julia_openmp.tga](../fig/julia_openmp.png)
 
 
 3. To measure strong scaling submit array job: *sbatch submit_strong.sh*
