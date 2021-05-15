@@ -143,7 +143,7 @@ unsigned char *julia_set ( int w, int h, int th, float xl, float xr, float yb, f
 
   rgb = ( unsigned char * ) malloc ( w * h * 3 * sizeof ( unsigned char ) );
 
-# pragma omp parallel for schedule(dynamic) \
+# pragma omp parallel for schedule(static) \
   shared ( h, w, xl, xr, yb, yt ) \
   private ( i, j, k, juliaValue )
     for ( j = 0; j < h; j++ )
