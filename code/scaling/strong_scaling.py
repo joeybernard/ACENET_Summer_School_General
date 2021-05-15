@@ -16,7 +16,7 @@ data = data[ind[:, 0], :]
 ncpu = data[:, 0]
 
 # Initialize array for theoretical curves
-ta = np.zeros(len(ncpu))
+t = np.zeros(len(ncpu))
 
 # Compute average computation time on 1 CPU
 t1 = 0
@@ -39,15 +39,14 @@ popt, pcov = curve_fit(amdahl, ncpu, speedup)
 
 # Create optimized curve
 for i, n in enumerate(ncpu):
-    ta[i] = amdahl(n, popt)
+    t[i] = amdahl(n, popt)
 
 # Plot data and fit
 legend = []
 legend.append("data")
 legend.append("fit (s=" '{:.2f}'.format(float(1-popt)) + ")")
-print(legend)
 print("Serial fraction =", 1-popt)
-plt.plot(ncpu, ta, '--k')
+plt.plot(ncpu, t, '--k')
 plt.title("Strong Scaling")
 plt.ylabel("Speed Up")
 plt.xlabel("Number of CPUs")

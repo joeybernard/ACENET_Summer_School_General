@@ -9,8 +9,9 @@ objectives:
 - Understand limits to parallel speedup.
 keypoints:
 - An increase of the number of processors usually leads to a decrease in efficiency.
-- The increase of problem size usually leads to an increase in efficiency.
-- The parallel problem can be solved efficiently by increasing the number of processors and the problem size simultaneously.
+- An increase of problem size usually leads to an increase in efficiency.
+- A parallel problem can often be solved efficiently by increasing the number of processors and the problem size simultaneously.  This is called "weak scaling".
+- Not every problem is amenable to weak scaling.
 ---
 
 #### Speedup
@@ -315,7 +316,7 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
 > >    return ncpu-(1-p)*(ncpu-1)
 > > ~~~
 > > {: .source}
-> > Full script 'submit_weak.sh' is included in julia_set.tar.gz
+> > Full script 'submit-weak.sh' is included in julia_set.tar
 > {: .solution}
 {: .challenge}
 
