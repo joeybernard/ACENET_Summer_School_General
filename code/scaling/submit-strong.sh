@@ -1,5 +1,4 @@
 #!/bin/bash
-#SBATCH -A def-svassili
 #SBATCH --cpus-per-task=16
 #SBATCH --time=1:0
 #SBATCH --array=1-16%1

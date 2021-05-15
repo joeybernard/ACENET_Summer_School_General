@@ -240,6 +240,8 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
     The program generates image file *julia_openmp.tga*:
     ![julia_openmp.tga](../fig/julia_openmp.png)
 
+    The program also writes the thread count and run time to a file *output.csv*.
+    Delete or rename *output.csv* so that you have a clean dataset for the next step.
 
 3. To measure strong scaling submit array job: *sbatch submit_strong.sh*
     ~~~
@@ -256,25 +258,40 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
     ~~~
     {: .source}
 
-    Timing results will be saved in *output.csv*
-
-4. Fit data with Amdahl's law
+4. Fit the data with Amdahl's law.
+   The python script will estimate the serial fraction $S$.
     ~~~
     module load python scipy-stack
     mv output.csv strong_scaling.csv
     python strong_scaling.py
     ~~~
     {: .source}
-    ![](../code/strong_scaling.svg)
+    ![](../fig/strong_scaling_plot.svg)
 
 
 > ## Testing weak scaling
 >
-> 1. Modify the submission script to test weak scaling and rerun the test.
-> 2. Modify python script to fit weak scaling data (Increase both the number of pixels and the number of CPUs). Compare serial fraction and speedup values obtained using stong and weak scaling tests.
+> * Modify the submission script to test weak scaling by increasing both
+>   the number of pixels and the number of CPUS.  Rerun the test.
+>
+> If you haven't done arithmetic in the shell before, here's an 
+> example of multiplying two integer variables:  
+> ~~~
+> width=$((N*basesize))
+> ~~~
+> {: .source}
+>
+> * Then modify the python script to fit weak scaling data. Compare the serial
+>   fraction and speedup values obtained using strong and weak scaling tests.
 >
 > > ## Solution
-> > Submission script for measuring weak scaling
+> > Remember that Gustafson's Law models the case where the amount of work
+> > (the number of pixels in this case) is proportional to the number of 
+> > processors.  You can scale only the width to simplify the code.
+> >
+> > Here is a script that scales *both* height and width, using the calculator
+> > utility 'bc' and square root to keep the total number of pixels proportional
+> > to the core count. 
 > > ~~~
 > > #!/bin/bash
 > > #SBATCH -A def-sponsor0
@@ -291,7 +308,6 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
 > >./a.out $sw $sh $N
 > > ~~~
 > > {: .source}
-> > To simplify the submission script you could scale only width.
 > >
 > > Use Gustafson's law function to fit weak scaling data:
 > > ~~~
@@ -303,20 +319,32 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
 > {: .solution}
 {: .challenge}
 
-#### Scheduling Threads in OpenMP.
-The schedule refers to the way the individual values of the loop variable, are spread across the threads. A static schedule means that it is decided at the beginning which thread will do which values. Dynamic means that each thread will work on a chunk of values and then take the next chunk which hasn't been worked on by any thread. The latter allows better balancing (in case the work varies between different values for the loop variable), but requires some communication overhead.
 
-> ## Improving Parallel Performance
+> ## Scheduling Threads in OpenMP
 >
-> Add 'schedule(dynamic)' statement to #pragma OpenMP block (line 146), recompile the code and rerun strong scaling test.
+> In the OpenMP module of this summer school we'll describe how you can affect
+> how OpenMP divides up parallel work using the 'schedule' directive.  Here's
+> a preview:
+>
+> The schedule refers to the way the work chunks are spread across threads. A
+> *static* schedule means that it is decided at the beginning of a loop which
+> thread will handle which iterations of the loop. A *dynamic* schedule means
+> that each thread will work on a few iterations and then take the next chunk
+> which hasn't been taken by another thread. The latter allows better balancing
+> if the work varies between different iterations, but requires some
+> communication overhead.
+>
+> Add 'schedule(dynamic)' to the '#pragma' block near line 146 in
+> julia_set_openmp.c, recompile the code, and rerun the strong scaling test.
 > Compare test results with and without dynamic scheduling.
->
-> Why dynamic scheduling improves parallel speedup for this problem?
+> 
+> Does dynamic scheduling improve the speedup for this problem?  Why do you
+> suppose that is?
 {: .challenge}
 
 References:
 
-1. Amdahl, Gene M. (1967). AFIPS Conference Proceedings. (30): 483–485. doi: 10.1145/1465482.1465560
-2. Gustafson, John L. (1988). Communications of the ACM. 31 (5): 532–533. doi: 10.1145/42411.42415
+1. Amdahl, Gene M. (1967). *AFIPS Conference Proceedings.* (30): 483–485. doi: 10.1145/1465482.1465560
+2. Gustafson, John L. (1988). *Communications of the ACM.* 31 (5): 532–533. doi: 10.1145/42411.42415
 
 {% include links.md %}
