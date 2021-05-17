@@ -34,7 +34,8 @@ Available hardware features influence parallel strategies.
 
 ![](../fig/parallel_app_1.svg)
 
-Blur operation:
+An example of a stencil operation is blurring an image:
+Information from neighboring pixels is introduced into each pixel.
 
 $$x_{i,j}^{new}=x_{i-1,j}+x_{i,j-1}+x_{i,j}^{old}+x_{i+1,j}+x_{i,j+1}$$
 - Repeat computations for each element of the mesh
@@ -44,7 +45,12 @@ Vectorization can be used to work on more than one unit of data at a time.
 
 ![](../fig/parallel_app_2.svg)
 
-- Most processors today have vector units that allow processors to operate on more than one piece of data (int, float, double) at a time.  For example, a vector operation shown in the figure is conducted on eight floats. This operation can be executed in a single clock cycle, with little overhead costs to the serial operation.
+- Many modern CPUs can operate on several pieces of identical data (int, float, double) at one time.
+- An example are CPUs which support 
+  [AVX](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions) instructions.
+- The vector operation shown in the figure is conducted on eight floats. 
+- The following code shows how to set eight values (twice) and then
+   subtract them using single AVX instructions.
 
 ##### Example AVX2 program
 avx2_example.c
@@ -70,23 +76,39 @@ int main() {
 }
 ~~~
 {: .source}
-Compiling: gcc -mavx
+Compiling: `gcc -mavx avx2_example.c -o avx2_example`
 
 
 #### Threads
-Most of today’s CPUs have several processing cores. So, we can use threading to engage several cores to operate simultaneously on four rows at a time as shown in Figure.
+
+Most of today’s CPUs have several processing cores. We can use threading to
+engage several cores to operate simultaneously on four rows at a time as shown
+in the next figure.
 
 ![](../fig/parallel_app_3.svg)
 
-Technically, a thread is defined as an independent stream of instructions that can be scheduled to run by the operating system.  From a developer point of view, thread is a "procedure" that runs independently from its main program.
+Technically, a [thread](https://en.wikipedia.org/wiki/Thread_(computing)) is
+defined as an independent stream of instructions that can be scheduled to run
+by the operating system.  From a developer's point of view, a thread is a
+piece of code that can execute concurrently with other threads, but that *may*
+share certain things like access to the same memory.
 
-Imagine the main program that contains a number of procedures. In a "multi-threaded" program all of these procedures can be scheduled to run simultaneously and/or independently by the operating system.
+On Linux systems (and many others), every process has at least one thread, but
+may have more.  A thread is also called "light-weight process" or LWP.
 
-Threads operate in shared-memory multiprocessor architectures.
+A "multi-threaded" program is one which is designed to run more than one thread
+to take advantage of a shared-memory or multi-core architecture.
 
-POSIX Threads (Pthreads) and OpenMP represent the two most popular implementations of multiprocessing models. Pthreads library is a low-level API providing extensive control over threading operations. It is very flexible and provides very fine-grained control over multi-threading operations. Being low-level it requires multiple steps to perform simple threading tasks.
+POSIX Threads (Pthreads) and OpenMP represent the two most popular
+implementations of this model.  The Pthreads library is a low-level API
+providing extensive control over threading operations. It is very flexible and
+provides very fine-grained control over multi-threading operations. Being
+low-level it requires multiple steps to perform simple threading tasks.
 
-On the other hand, OpenMP is a much higher level and much simpler to use.
+OpenMP is a much higher level and much simpler to use.
+Below is some sample code in C which uses OpenMP.
+The line `#pragma omp parallel for` tells an OpenMP-compliant compiler
+that the following loop should be executed in multiple threads.
 
 ##### Example OpenMP program
 omp_example.c
@@ -119,8 +141,8 @@ return(0);
 }
 ~~~
 {: .source}
-- Compiling: gcc -fopenmp
-- Running: OMP_NUM_THREADS
+- Compiling: `gcc -fopenmp omp_example.c -o omp_example`
+- Running: `OMP_NUM_THREADS=2 ./omp_example`
 
 
 #### Distributed memory / Message Passing
@@ -131,7 +153,9 @@ Multiple tasks can reside on the same physical machine and/or across an arbitrar
 
 Tasks exchange data through communications by sending and receiving messages.
 
-OpenMPI and Intel MPI are two of the most popular implementations of message passing multiprocessing models installed on Compute Canada systems.
+MPI is the dominant standard for message-passing programming, and OpenMPI and
+Intel MPI are two popular implementations of that standard.  Here is some
+sample code which does the MPI equivalent of "Hello, world!"
 
 ![](../fig/parallel_app_4.svg)
 
@@ -160,8 +184,8 @@ int main(int argc, char** argv) {
     MPI_Finalize();
 }
 ~~~
-- Compiling: gcc mpi_example.c -lmpi
-- Running: srun -n 4 -A def-sponsor0 ./a.out
+- Compiling: `mpicc mpi_example.c -o mpi_example` or `gcc mpi_example.c -lmpi -o mpi_example`
+- Running: `srun -n 4 ./mpi_example`
 
 - Passing messages takes time
 
