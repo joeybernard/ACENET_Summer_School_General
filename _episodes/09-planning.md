@@ -118,12 +118,11 @@ We don't need to check for i<j at each iteration. The faster loop:
 
 ### Simplistic parallelization of the outer FOR loop
 
-A simplistic parallelization scheme would be to turn the outer for-loop
-(over index i) into a parallel loop. How this can be done will be covered
-on days two and three of the workshop.
+A simplistic parallelization scheme would be to turn the outer for-loop (over
+index i) into a parallel loop.  The work could be distributed by assigning
+`i=1,2` to CPU&nbsp;1, `i=3,4` to CPU&nbsp;2, and so on.  Ways to implement
+this will be covered in later days of the workshop.
 
-The work could be distributed by assigning `i=1,2` to CPU&nbsp;1, `i=3,4` to
-CPU&nbsp;2, and so on.
 
 #### Pseudo Code
 ```python
@@ -203,11 +202,14 @@ finalize()
 
 ### Using cut-offs
 
-Still, this MD algorithm scales with $N_{particles}^2$, beyond which all
-forces and potential-energy contributions are truncated and treated as zero,
-can restore near-linear scaling.  One way to do this is to bail out of
-the loop over the pair-list after computing the distance if it is larger
-than $r_{cut-off}$.
+We expect this algorithm to scale as $N_{particles}^2$.  Can we do better?
+
+At large distances the interaction between two particles becomes extremely
+small.  There must be some distance beyond which all forces and
+potential-energy contributions are effectively zero.  Recall that `calc_pot`
+and `calc_force` were the most expensive functions in the profile we made of
+the code earlier, so we can save time by *not* calculating these if the
+distance we compute is larger than some suitably-chosen $r_{cut-off}$.
 
 Further optimizations can be made by avoiding to compute the distances for
 all pairs at every step - essentially by keeping neighbor lists and using
@@ -218,18 +220,19 @@ described in text-books, journal publications and technical manuals.
 
 ### Spatial- (or Domain-) Decomposition
 
-When simulating large numbers of particles (~ 10<sup>5</sup>)) and across many nodes,
-communicating the updated coordinates, forces, etc. every timestep can
-become a bottle-neck when using this Force- (or Particle-) Decomposition
-scheme, where particles are assigned to fixed processors as above.
+The scheme we've just described, where each particle is assigned to a fixed
+processor, is called the Force-Decomposition or Particle-Decomposition scheme.
+When simulating large numbers of particles (~ 10<sup>5</sup>) and using many
+processors, communicating the updated coordinates, forces, *etc.*, every
+timestep can become a bottle-neck with this scheme.
 
-To reduce the amount of communication between processors and nodes, we can
-partition the simulation box along its axes into smaller domains.
-The particles are then assigned to the processors depending on in which domain
+To reduce the amount of communication between processors we can
+partition the simulation box along its axes into smaller **domains**.
+The particles are then assigned to processors depending on in which domain
 they are currently located.  This way many pair-interactions will be local
 within the same domain and therefore handled by the same processor.  For
-pairs of particles that are not located in the same domain, we can use e.g.
-the "eighth shell" method in which a processor handles those pairs, in which
+pairs of particles that are not located in the same domain, we can use *e.g.*
+the "eighth shell" method in which a processor handles those pairs in which
 the second particle is located only in the positive direction of the dimensions,
 as illustrated below.
 
@@ -238,8 +241,8 @@ as illustrated below.
 ![eighth shell domain decomposition](../fig/planning/domain_decomposition.png)
 
 In this way, each domain only needs to communicate with neighboring domains
-in one direction as long as none of the domain's dimension shorter than the
-longest cut-off.
+in one direction--- as long as the shortest dimension of a domain is larger
+than the longest cut-off distance.
 
 
 > Domain Decomposition not only applies to Molecular Dynamics (MD) but also

@@ -210,6 +210,7 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
     ~~~
     wget https://acenet-arc.github.io/ACENET_Summer_School_General/code/julia_set.tar
     tar -xf julia_set.tar
+    cd scaling
     ~~~
     {: .source}
 
@@ -323,9 +324,9 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
 
 > ## Scheduling Threads in OpenMP
 >
-> In the OpenMP module of this summer school we'll describe how you can affect
-> how OpenMP divides up parallel work using the 'schedule' directive.  Here's
-> a preview:
+> In the OpenMP module later in this summer school we'll describe how you can
+> affect how OpenMP divides up parallel work using the 'schedule' directive.
+> Here's a preview:
 >
 > The schedule refers to the way the work chunks are spread across threads. A
 > *static* schedule means that it is decided at the beginning of a loop which
@@ -335,12 +336,11 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
 > if the work varies between different iterations, but requires some
 > communication overhead.
 >
-> Add 'schedule(dynamic)' to the '#pragma' block near line 146 in
+> Change 'schedule(static)' to 'schedule(dynamic)' at line 146 in
 > julia_set_openmp.c, recompile the code, and rerun the strong scaling test.
-> Compare test results with and without dynamic scheduling.
+> Compare test results with dynamic and static scheduling.
 > 
-> Does dynamic scheduling improve the speedup for this problem?  Why do you
-> suppose that is?
+> Which performs better for this problem?  Why do you suppose that is?
 {: .challenge}
 
 References:
