@@ -36,14 +36,13 @@ An example of a submission script for an array job with the SLURM scheduler.
 
 ~~~ {.shell}
 #!/bin/bash
-#SBATCH --account=sponsor0
 #SBATCH --array=1-100
 #SBATCH --time=0-00:01:00
 
 echo "This is task $SLURM_ARRAY_TASK_ID on $(hostname) at $(date)"
 ~~~
 
-If the above is saved into a script called `array_job_submit.sh` and `sponsor0` with your sponsor's CC account it can be submitted to the SLURM schedular with:
+If the above is saved into a script called `array_job_submit.sh` it can be submitted to the SLURM scheduler with:
 ~~~ {.shell}
 $ sbatch array_job_submit.sh
 ~~~
