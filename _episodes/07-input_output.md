@@ -80,6 +80,7 @@ The most important part you should know is that the parallel filesystem is optim
 ## Moving data on and off a cluster
 
 - "Internet" cabling varies a lot. 100Mbit/s widespread, 1Gbit becoming common, 10Gbit or more between *most* CC sites
+  - Remember, there are 8 bits in a byte.  Pay careful attention to whether the number you are reading is bits or bytes!
 - CANARIE is the Canadian research network. Check out their [Network website](https://www.canarie.ca/network/)
 - Firewalls sometimes the problem - security versus speed
 
@@ -92,8 +93,9 @@ The most important part you should know is that the parallel filesystem is optim
 >
 > > ## Solution
 > > Remember a byte is 8 bits, a megabyte is 8 megabits, etc.
-> > 1. 1024MByte/GByte * 8Mbit/MByte / 100Mbit/sec = 81 sec
-> > 2. 8192 sec = 2 hours and 20 minutes
+> > 1. 1024 MByte/GByte * 8 bit/Byte / 100 Mbit/sec = 81 sec
+> > 2. 1024 TByte/GByte * 8 bit/Byte / 1 Gbit/sec = 8192 sec,
+> >    a little under 2 hours and 20 minutes
 > >
 > > Remember these are "theoretical maximums"! There is almost always some other bottleneck or contention that reduces this!
 > >
