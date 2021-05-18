@@ -261,7 +261,8 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
     {: .source}
 
 4. Fit the data with Amdahl's law.
-   The python script will estimate the serial fraction $S$.
+   The python script will estimate the serial fraction $S$, and try to plot a graph of the fitted curve.
+   (To see the graph you may need to have an X11 server running and X11 forwarding enabled.)
     ~~~
     module load python scipy-stack
     mv output.csv strong_scaling.csv
