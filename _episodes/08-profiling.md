@@ -41,7 +41,7 @@ The example program performs simple Molecular Dynamics (MD) simulations
 of particles interacting with a simple harmonic potential of the form:
 
 
-$$v(x) = ( sin ( min ( x, PI/2 ) ) )^2$$
+$$v(x) = ( sin ( min ( x, \pi/2 ) ) )^2$$
 
 It is a modified version of an MD example written in [Fortran 90][md_f90]
 by [John Burkardt][jburkardt] and released under the GNU LGPL license.
@@ -90,7 +90,7 @@ $ wget https://acenet-arc.github.io/ACENET_Summer_School_General/code/profiling/
 $ gfortran md_gprof.f90  -o md_gprof
 
 # Run program with the following parameters:
-* 2 Dimensions, 200 particles, 500 steps, time-step: 0.1
+#  2 dimensions, 200 particles, 500 steps, time-step: 0.1
 $ ./md_gprof 2 200 500 0.1
 ```
 {: .bash}

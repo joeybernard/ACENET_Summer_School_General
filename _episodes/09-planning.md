@@ -21,6 +21,7 @@ keypoints:
 ---
 
 > ## Our Goals
+> * Don't duplicate work.
 > * Run as much as possible in parallel.
 > * Keep all CPU-cores busy at all times.
 > * Avoid processes/threads having to wait long for data.
@@ -31,7 +32,10 @@ keypoints:
 
 ### Serial Algorithm
 
-The Serial MD algorithm written as pseudo-code looks somewhat like this:
+The key subroutine in the serial MD code, we discovered in the previous
+episode, is `compute(...)`.  You can find it at line 225 of `md_gprof.f90`, and
+the major loop begins at line 295.  Written in Python-ish pseudo-code the
+whole program looks something like this:
 
 #### Pseudo Code
 ```python
@@ -45,7 +49,7 @@ while step < numSteps:
       if ( i != j ) :
         calculate_distance(i, j)
         calculate_potential_energy(i, j)
-        # Attributing half of the total potential energy of this pair to particle J.
+        # Attribute half of the total potential energy of this pair to particle J.
 
         calculate_force(i, j)
         # Add particle J's contribution to the force on particle I.
@@ -89,10 +93,10 @@ while step < numSteps:
       if ( i < j ):
         calculate_distance(i, j)
         calculate_potential_energy(i, j)
-        # Attributing the full potential energy of this pair to particle J.
+        # Attribute the full potential energy of this pair to particle J.
 
         calculate_force(i, j)
-        # Add the force if pair (I,J) to both particles.
+        # Add the force of pair (I,J) to both particles.
 
   calculate_kinetic_energy()
   update_velocities()
@@ -131,20 +135,20 @@ step = 0
 
 while step < numSteps:
 
-  # Run this Loop in Parallel:
+  # Run this loop in parallel:
   for ( i = 1;  i <= nParticles; i++ ):
 
     for ( j = 1;  j <= nParticles; j++ ):
       if ( i < j ):
         calculate_distance(i, j)
         calculate_potential_energy(i, j)
-        # Attributing the full potential energy of this pair to particle J.
+        # Attribute the full potential energy of this pair to particle J.
 
         calculate_force(i, j)
         # Add the force if pair (I,J) to both particles.
   gather_forces_and_potential_energies()
 
-  # Continue in Serial:
+  # Continue in serial:
   calculate_kinetic_energy()
   update_velocities()
   update_coordinates()
@@ -176,11 +180,10 @@ while step < numSteps:
   # generate pair-list
   pair_list = []
   for ( i = 1;  i <= nParticles; i++ ):
-    for ( j = 1;  j <= nParticles; j++ ):
-      if ( i < j ):
-        pair_list.append( (i,j) )
+    for ( j = i+1;  j <= nParticles; j++ ):
+      pair_list.append( (i,j) )
 
-  # Run this Loop in Parallel:
+  # Run this loop in parallel:
   for (i, j) in pair_list:
     calculate_distance(i, j)
     calculate_potential_energy(i, j)
@@ -190,7 +193,7 @@ while step < numSteps:
     # Add the force if pair (I,J) to both particles.
   gather_forces_and_potential_energies()
 
-  # Continue in Serial:
+  # Continue in serial:
   calculate_kinetic_energy()
   update_velocities()
   update_coordinates()
@@ -209,7 +212,7 @@ small.  There must be some distance beyond which all forces and
 potential-energy contributions are effectively zero.  Recall that `calc_pot`
 and `calc_force` were the most expensive functions in the profile we made of
 the code earlier, so we can save time by *not* calculating these if the
-distance we compute is larger than some suitably-chosen $r_{cut-off}$.
+distance we compute is larger than some suitably-chosen $r_{cutoff}$.
 
 Further optimizations can be made by avoiding to compute the distances for
 all pairs at every step - essentially by keeping neighbor lists and using
@@ -280,10 +283,7 @@ An ideal load distribution might look like this:
 
 #### Unbalanced Load: the size of tasks differs
 Whereas if the tasks that are distributed have varying length, the program
-needs to wait for the slowest task to finish.  Such situations are even worse
-in cases where parallel execution is followed by a synchronization step,
-before proceeding to the next iteration of a larger-scope loop (e.g. next
-time-step, generation).
+needs to wait for the slowest task to finish.  
 
 ![Unbalanced Load](../fig/planning/unbalanced_load_distribution.png)
 
@@ -299,13 +299,16 @@ length.
 ---
 
 #### Larger Chunk-size evens out the size of tasks
-Chunks consisting of many tasks (large chunk-size) can result relatively
-consistent lengths of the chunks, even if the lengths of the tasks are not
-pre-determined and have large variations.  However, this can lead to
-situations, where a large fraction of the processors is left unused, when
-by chance, a chunk consists of many very long tasks, or as in the figure
-below, the number of chunks is sightly larger than the closest multiple of
-the processors.
+Chunks consisting of many tasks (large chunk-size) can result in relatively
+consistent lengths of the chunks, even if the lengths of the tasks have large
+variations, as long as tasks of different sizes will be combined into single
+chunks.  
+
+But a larger chunk-size leads to a smaller number of chunks.  This can cause
+another inefficiency if the number of chunks is not an integer multiple of the
+number of processors.  In the figure below, for example, the number of chunks
+is just *one* larger than the number of processors, so $N-1$ processors are
+left idle while the $N+1$th chunk is finished up.
 
 ![large chunk size](../fig/planning/chunksize_3.png)
 
@@ -324,11 +327,11 @@ Creating a queue (list) of independent tasks which are processed asynchronously
 can improve the utilization of resources especially if the tasks are sorted
 from the longest to the shortest.
 
-However, special care needs to be taken to avoid race-conditions, where two
-processes take the same task from the stack.  Having a dedicated manager-
-process to assign the work to the compute processes introduces overhead
-and can become a bottle-neck when a very large number of computing processes are involved.
-
-This also increases the amount of communication needed.
+However, care needs to be taken to avoid a race condition in which two
+processes take the same task from the task-queue.  Having a dedicated manager
+process to assign the work to the compute processes can eliminate the
+race-condition, but introduces more overhead (mostly the extra communication
+required) and can potentially become a bottle-neck when a very large number of
+processes are involved.
 
 {% include links.md %}
