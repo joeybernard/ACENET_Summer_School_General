@@ -13,10 +13,14 @@ keypoints:
 
 ## Cluster storage
 ### Cluster Architecture
+
+Here is the basic architecture of an HPC cluster:
 - There is a login node (or maybe more than one).
-- There might be a data transfer node (DTN), which is a login node specially designated for doing (!) data transfers.
-- There are a lot of compute nodes. The compute nodes may or may not have a local disk.
+- There might be a data transfer node (DTN), which is a login node specially designated for doing data transfers.
+- There are a lot of compute nodes. The compute nodes may or may not have local disks.
 - Most I/O goes to a storage array or SAN (Storage Array Network).
+
+![](../fig/Cluster-architecture.png)
 
 Broadly, you have two choices: You can do I/O to the node-local disk (if there is any), or you can do I/O to the SAN. Local disk suffers little or no contention but is inconvenient.
 
@@ -33,7 +37,7 @@ For that particular disk model, sequential read/write speed is 3200/3200 MB/sec,
 Most input and output on a cluster goes through the SAN. There are many architectural choices made in constructing  SAN.
 - What technology? [Lustre](http://lustre.org/about/) popular these days. ACENET & Compute Canada use it. [GPFS](https://www.ibm.com/support/knowledgecenter/en/STXKQY_4.2.0/com.ibm.spectrum.scale.v4r2.ins.doc/bl1ins_intro.htm) is another.
 - How many servers, and how many disks in each? What disks?
-- How many MDS? MDS = MetaData Server. Things like ‘ls’ only require metadata. Exactly what is handled by the MDS (or even if there is one) may depend on the technology chosen (e.g. Lustre).
+- How many MDS? MDS = MetaData Server. Things like `ls` only require metadata. Exactly what is handled by the MDS (or even if there is one) may depend on the technology chosen (e.g. Lustre).
 - What switches and how many of them?
 - Are things wired together with fibre or with ethernet? What’s the wiring topology?
 - Where is there redundancy or failovers, and how much?
@@ -41,12 +45,14 @@ Most input and output on a cluster goes through the SAN. There are many architec
 This is all the domain of the sysadmins, but what should you as the user do about input/output?
 
 ### Programming input/output.
-If you’re doing parallel computing you have further choices about how you do that.
+If you’re doing parallel computing you have choices about how you do input and output.
 
-- File-per-process is reliable, portable and simple, but lousy for checkpointing and restarting.
+- One-file-per-process is reliable, portable and simple, but lousy for checkpointing and restarting.
 - Many small files on a SAN (or anywhere, really) leads to metadata bottlenecks. Most HPC filesystems assume no more than 1,000 files per directory.
-- Parallel I/O (e.g. MPI-IO) -> many processes, one file
-- Solves restart problems, but requires s/w infrastructure and programming
+- To have many different processes write to the same file at one time is called
+  "parallel I/O".  MPI supports this via a specification called MPI-IO.
+- Parallel I/O makes restarts simpler, but must be written into the program.  
+  It also requires support from the underlying file system.  (Luster and GPFS support it.)
 - High-level interfaces like [NetCDF](https://www.unidata.ucar.edu/software/netcdf/docs/) and [HDF5](https://www.hdfgroup.org/solutions/hdf5/) are highly recommended
 - I/O bottlenecks:
     - Disk read-write rate. Alleviated by striping.
