@@ -269,6 +269,8 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
     python strong_scaling.py
     ~~~
     {: .source}
+    The Python script will also save the figure as "strong_scaling.svg",
+    and you can re-display it using `display strong_scaling.svg`.
     ![](../fig/strong_scaling_plot.svg)
 
 
