@@ -82,13 +82,8 @@ int main ( int argc, char* argv[] )
   usleep(100000);
   rgb = julia_set ( w, h, th, xl, xr, yb, yt );
   t2 = omp_get_wtime ( ) - t1;
-  printf ( "  Using %d threads max, %g seconds\n", omp_get_max_threads ( ), t2 );
-
-  FILE *fp;
-  fp=fopen("output.csv", "a");
-  fprintf(fp, "%i, %f\n",th,t2);
-  fclose(fp);	  
-
+  printf ("  Width, height, threads, seconds: %d, %d, %d, %g\n",
+             w, h, omp_get_max_threads(), t2);
   tga_write ( w, h, rgb, "julia_openmp.tga" );
 /*
   Free memory.
