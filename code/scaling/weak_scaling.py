@@ -1,5 +1,6 @@
 #!/usr/local/bin/python
 
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
@@ -9,7 +10,12 @@ def gustafson(ncpu, p):
     return ncpu-(1-p)*(ncpu-1)
 
 
-data = np.loadtxt('weak_scaling.csv', delimiter=',')
+if sys.argv[1]:
+   input = open(sys.argv[1])
+else:
+   input = sys.stdin
+
+data = np.loadtxt(input, delimiter=',')
 # Sort data by number of CPUs
 ind = np.argsort(data, axis=0)
 data = data[ind[:, 0], :]
