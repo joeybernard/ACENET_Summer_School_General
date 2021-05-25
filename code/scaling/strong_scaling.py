@@ -1,5 +1,6 @@
 #!/usr/local/bin/python
 
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
@@ -9,7 +10,12 @@ def amdahl(ncpu, p):
     return 1/(1-p+p/ncpu)
 
 
-data = np.loadtxt('strong_scaling.csv', delimiter=',')
+if sys.argv[1]:
+   input = open(sys.argv[1])
+else:
+   input = sys.stdin
+
+data = np.loadtxt(input, delimiter=',')
 # Sort data by number of CPUs
 ind = np.argsort(data, axis=0)
 data = data[ind[:, 0], :]
