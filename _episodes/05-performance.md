@@ -178,9 +178,7 @@ we use them efficiently.
 
 #### Example problem.
 
-The example OpenMP program calculates an image of a [Julia set](https://people.sc.fsu.edu/~jburkardt/c_src/julia_set/julia_set.html). It is written by [John Burkardt](https://people.sc.fsu.edu/~jburkardt/) and released under the GNU LGPL license.
-
-The program is modified to take width, height and number of threads as arguments. It will print the number of threads used and computation time on screen. It will also append these numbers into the file 'output.csv' for analysis. You could repeat each computation several times to improve accuracy.
+The example OpenMP program calculates an image of a [Julia set](https://people.sc.fsu.edu/~jburkardt/c_src/julia_set/julia_set.html). It is a modification of one written by [John Burkardt](https://people.sc.fsu.edu/~jburkardt/) and released under the GNU LGPL license.
 
 The algorithm finds a set of points in a 2D rectangular
 domain with width W and height H that are associated with Julia set.
@@ -194,6 +192,8 @@ For each complex constant $c$ one gets a different Julia set. The initial value 
 To construct the image each pixel (x,y) is mapped to a rectangular region of the complex plane:  $z_0=x+iy$. Each pixel then represents the starting point for the series, $z_0$. The series is computed for each pixel and if it diverges to infinity it is drawn in white, if it doesn't then it is drawn in red.
 
 In this implementation of the algorithm up to the maximum of 200 iterations for each point, $z$ is carried out. If the value of $\lvert z \lvert$ exceeds 1000 at any iteration, $z$ is not in the Julia set.
+
+The program takes width, height, and number of threads as arguments. It will print the number of threads used and computation time on screen. It's a good idea to repeat each computation several times to observe how much variance there is and to improve accuracy.
 
 > ## Running strong and weak scaling tests
 > We can run this sample program in both strong and weak scaling modes.
@@ -229,7 +229,7 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
     JULIA_OPENMP:
       C/OpenMP version.
       Plot a version of the Julia set for Z(k+1)=Z(k)^2-0.8+0.156i
-      Using 2 threads max, 0.195356 seconds
+      Width, height, threads, seconds: 1000, 1000, 2, 0.19876
 
     TGA_WRITE:
       Graphics data saved as 'julia_openmp.tga'
@@ -239,11 +239,9 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
     ~~~
     {: .output}
 
-    The program generates image file *julia_openmp.tga*:
+    The program generates image file *julia_openmp.tga*,
+    which you may be able to see using `display julia_openmp.tga`:
     ![julia_openmp.tga](../fig/julia_openmp.png)
-
-    The program also writes the thread count and run time to a file *output.csv*.
-    Delete or rename *output.csv* so that you have a clean dataset for the next step.
 
 3. To measure strong scaling submit array job: *sbatch submit_strong.sh*
     ~~~
@@ -260,13 +258,21 @@ In this implementation of the algorithm up to the maximum of 200 iterations for 
     ~~~
     {: .source}
 
-4. Fit the data with Amdahl's law.
+4. Extract the scaling data from the raw output.
+   The data we need are in the `slurm-1234567_16.out` files and the like.
+   We need the thread counts and the run times, which you can
+   extract with a utility like `grep` or  `awk`:
+   ~~~
+   awk '/threads, seconds:/ {print $7, $8}' slurm-1234567_*.out > 1234567.csv
+   ~~~
+   {: .source}
+
+5. Fit the data with Amdahl's law.
    The python script will estimate the serial fraction $S$, and try to plot a graph of the fitted curve.
    (To see the graph you may need to have an X11 server running and X11 forwarding enabled.)
     ~~~
     module load python scipy-stack
-    mv output.csv strong_scaling.csv
-    python strong_scaling.py
+    python strong_scaling.py  1234567.csv
     ~~~
     {: .source}
     The Python script will also save the figure as "strong_scaling.svg",
